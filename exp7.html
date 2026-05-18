@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>光學實驗七：干涉儀</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --ink: #0d1117;
+  --paper: #faf8f3;
+  --accent: #b5451b;
+  --accent2: #1b5eb5;
+  --gold: #c8922a;
+  --muted: #6b6457;
+  --surface: #f0ece1;
+  --border: #d4cdb8;
+  --code-bg: #1a1e2e;
+  --green: #2a7a4b;
+  --serif: 'Noto Serif TC', serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--serif); background: var(--paper); color: var(--ink); line-height: 1.85; font-size: 16px; }
+
+/* HERO */
+.hero { background: linear-gradient(135deg, #f5efde 0%, #ebe0c4 100%); color: var(--ink); padding: 72px 40px 56px; text-align: center; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+.hero::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(184,74,49,0.04) 39px, rgba(184,74,49,0.04) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(184,74,49,0.04) 39px, rgba(184,74,49,0.04) 40px); }
+.hero-tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.25em; color: var(--accent); text-transform: uppercase; margin-bottom: 20px; position: relative; }
+.hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 900; line-height: 1.15; margin-bottom: 16px; position: relative; color: var(--ink); }
+.hero h1 span { color: var(--accent); }
+.hero-sub { font-size: 1.05rem; color: var(--muted); max-width: 560px; margin: 0 auto; position: relative; }
+.hero-pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 28px; position: relative; }
+.pill { background: white; border: 1px solid var(--border); color: var(--ink); font-family: var(--mono); font-size: 11px; padding: 5px 14px; border-radius: 20px; letter-spacing: 0.08em; }
+
+/* TABS */
+.tabs-wrapper { position: sticky; top: 0; z-index: 100; background: white; border-bottom: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+.tabs { display: flex; overflow-x: auto; max-width: 1100px; margin: 0 auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn { flex-shrink: 0; background: none; border: none; color: var(--muted); font-family: var(--serif); font-size: 13.5px; padding: 16px 22px; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* MAIN */
+.main { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+.section { display: none; animation: fadeIn 0.35s ease; }
+.section.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* TYPE */
+h2 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; margin-bottom: 28px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
+h2 .num { font-family: var(--mono); font-size: 0.7em; color: var(--accent); margin-right: 10px; }
+h3 { font-size: 1.2rem; font-weight: 700; margin: 32px 0 14px; }
+h3::before { content: '▸ '; color: var(--accent); font-size: 0.85em; }
+p { margin-bottom: 16px; }
+
+/* CARDS */
+.card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 24px 28px; margin-bottom: 20px; }
+.card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+@media(max-width:640px){.card-grid{grid-template-columns:1fr;}}
+.card-accent { border-left: 4px solid var(--accent); }
+.card-blue { border-left: 4px solid var(--accent2); }
+.card-gold { border-left: 4px solid var(--gold); }
+.card-green { border-left: 4px solid var(--green); }
+.card-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+.card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
+
+/* FORMULA */
+.formula-box { background: #f5efde; color: #3a2c10; font-family: var(--mono); font-size: 1rem; padding: 20px 28px; border-radius: 8px; margin: 20px 0; overflow-x: auto; border-left: 3px solid var(--gold); line-height: 2; }
+.formula-box .comment { color: #8a7050; font-size: 0.88em; }
+.formula-box .hl { color: var(--accent); font-weight: 700; }
+.formula-box .hl2 { color: var(--accent2); }
+
+/* STEPS */
+.steps { counter-reset: step; list-style: none; padding: 0; }
+.step { counter-increment: step; display: flex; gap: 18px; margin-bottom: 16px; padding: 18px 20px; background: white; border: 1px solid var(--border); border-radius: 8px; transition: box-shadow 0.2s; }
+.step:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+.step-num { flex-shrink: 0; width: 36px; height: 36px; background: var(--accent); color: white; font-family: var(--mono); font-weight: 700; font-size: 0.9rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.step-num::before { content: counter(step); }
+.step-body { flex: 1; }
+.step-title { font-weight: 700; margin-bottom: 5px; }
+.step-desc { color: #3a3530; font-size: 0.95rem; }
+.step-note { margin-top: 8px; font-family: var(--mono); font-size: 0.82rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 8px; }
+.step-detail { margin-top: 10px; }
+.step-detail-row { display: flex; gap: 10px; padding: 4px 0; font-size: 0.91rem; align-items: baseline; }
+.step-detail-label { flex-shrink: 0; font-family: var(--mono); font-size: 0.74rem; color: var(--gold); font-weight: 600; min-width: 56px; letter-spacing: 0.05em; padding-top: 2px; }
+.step-detail-text { flex: 1; color: #2c2820; }
+.step-formula { font-family: var(--mono); background: #f5efde; padding: 3px 8px; border-radius: 3px; color: var(--accent); font-size: 0.88em; }
+
+/* TABLES */
+.table-wrapper { overflow-x: auto; margin: 20px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+thead tr { background: #3a3528; color: #faf8f3; }
+thead th { padding: 12px 16px; text-align: left; font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.08em; font-weight: 600; }
+tbody tr:nth-child(even) { background: var(--surface); }
+tbody tr:hover { background: #e8f0fa; }
+td { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+td.num-cell { font-family: var(--mono); text-align: right; }
+td.highlight { color: var(--accent); font-weight: 700; font-family: var(--mono); }
+
+/* CHART */
+.chart-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 28px; margin-bottom: 24px; }
+.chart-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+.chart-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; }
+canvas { max-height: 300px; }
+
+/* COMPARE */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 24px 0; }
+@media(max-width:640px){.compare-grid{grid-template-columns:1fr;}}
+.compare-card { background: white; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.compare-header { padding: 14px 20px; font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 10px; }
+.compare-header.red { background: #fef2f0; color: var(--accent); border-bottom: 2px solid var(--accent); }
+.compare-header.blue { background: #f0f4fe; color: var(--accent2); border-bottom: 2px solid var(--accent2); }
+.compare-body { padding: 16px 20px; }
+.compare-row { display: flex; gap: 8px; margin-bottom: 8px; font-size: 0.92rem; }
+.compare-row::before { content: '·'; color: var(--muted); flex-shrink: 0; }
+
+/* QA */
+.qa-item { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+.qa-q { background: var(--surface); padding: 16px 20px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: background 0.2s; }
+.qa-q:hover { background: #e4dfd0; }
+.qa-q .toggle { font-size: 1.2rem; color: var(--accent); transition: transform 0.2s; }
+.qa-q.open .toggle { transform: rotate(45deg); }
+.qa-a { display: none; padding: 18px 22px; background: white; border-top: 1px solid var(--border); font-size: 0.95rem; line-height: 1.9; }
+.qa-a.visible { display: block; animation: fadeIn 0.25s; }
+.qa-a ul { padding-left: 20px; line-height: 2.2; margin: 8px 0; }
+
+/* CALC */
+.calc-box { background: white; border: 2px solid var(--ink); border-radius: 10px; padding: 28px; margin: 24px 0; }
+.calc-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 18px; }
+.calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width:500px){.calc-grid{grid-template-columns:1fr;}}
+.input-group label { display: block; font-size: 0.82rem; font-family: var(--mono); color: var(--muted); margin-bottom: 5px; }
+.input-group input { width: 100%; border: 1px solid var(--border); border-radius: 5px; padding: 9px 12px; font-family: var(--mono); font-size: 0.95rem; background: var(--paper); color: var(--ink); transition: border-color 0.2s; }
+.input-group input:focus { outline: none; border-color: var(--accent2); }
+.calc-btn { grid-column: 1/-1; background: var(--accent); color: white; border: none; border-radius: 5px; padding: 12px 20px; font-family: var(--mono); font-size: 0.95rem; font-weight: 600; cursor: pointer; letter-spacing: 0.06em; transition: background 0.2s; }
+.calc-btn:hover { background: #913716; }
+.calc-result { grid-column: 1/-1; background: #f5efde; color: #3a2c10; border-left: 3px solid var(--accent2); font-family: var(--mono); font-size: 0.95rem; padding: 14px 18px; border-radius: 6px; display: none; line-height: 2; white-space: pre-wrap; }
+
+/* DIAGRAM */
+.diagram-wrapper { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin: 20px 0; text-align: center; }
+.diagram-wrapper svg { max-width: 100%; height: auto; }
+.diagram-caption { font-size: 0.85rem; color: var(--muted); margin-top: 12px; font-style: italic; }
+
+/* SETUP VISUAL */
+.setup-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+@media(max-width:700px){.setup-container{grid-template-columns:1fr;}}
+.setup-panel { background: white; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.setup-header { background: var(--ink); color: var(--gold); font-family: var(--mono); font-size: 12px; padding: 10px 16px; letter-spacing: 0.1em; }
+.setup-body { padding: 16px; }
+.setup-list { list-style: none; padding: 0; }
+.setup-list li { padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 0.9rem; display: flex; gap: 10px; }
+.setup-list li:last-child { border: none; }
+.setup-list li::before { content: '◆'; color: var(--gold); font-size: 0.7em; flex-shrink: 0; margin-top: 4px; }
+
+hr.divider { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+.equation { font-family: var(--mono); color: var(--accent); font-weight: 600; }
+strong { font-weight: 700; }
+
+/* fringe animation */
+.fringe-demo { background: #0a0a0a; border-radius: 8px; overflow: hidden; margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-tag">光學實驗 · Experiment 07 · NTHU Physics</div>
+  <h1>干涉儀<br><span>Interferometer</span></h1>
+  <p class="hero-sub">Michelson 干涉儀 與 Fabry–Perot 干涉儀<br>從雙光束到多光束干涉的完整解說與實驗操作</p>
+  <div class="hero-pills">
+    <span class="pill">雙光束干涉</span>
+    <span class="pill">多光束干涉</span>
+    <span class="pill">波長量測</span>
+    <span class="pill">折射率量測</span>
+    <span class="pill">鈉燈雙線 Δλ</span>
+    <span class="pill">Finesse</span>
+  </div>
+</header>
+
+<nav class="tabs-wrapper">
+  <div class="tabs">
+<button class="tab-btn active" onclick="showTab('overview',this)">實驗概覽</button>
+    <button class="tab-btn" onclick="showTab('michelson',this)">Michelson 干涉儀</button>
+    <button class="tab-btn" onclick="showTab('fabry',this)">Fabry–Perot 干涉儀</button>
+    <button class="tab-btn" onclick="showTab('qa',this)">問題與討論</button>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ══════════════════════════════════════════ -->
+<!--  TAB 1: OVERVIEW                           -->
+<!-- ══════════════════════════════════════════ -->
+<section id="tab-overview" class="section active">
+  <h2><span class="num">01</span>實驗概覽</h2>
+
+  <p>本實驗分為兩大部分：第一部分使用 <strong>Michelson 干涉儀</strong>（雙光束干涉），第二部分使用 <strong>Fabry–Perot 干涉儀</strong>（多光束干涉）。兩者的共同核心都是利用光程差改變所造成的干涉條紋變化，將不易直接量測的物理量，轉化為可數的明暗條紋移動數。</p>
+
+  <div class="card-grid">
+    <div class="card card-accent">
+      <div class="card-label">Part A — Michelson</div>
+      <div class="card-title">Michelson 干涉儀</div>
+      <p style="font-size:0.93rem;">以分光鏡將光分為兩臂，各自被鏡面反射後重合，形成同心圓等傾干涉條紋。</p>
+      <ul style="font-size:0.9rem;padding-left:18px;line-height:2.2">
+        <li>校準螺旋測微器（求 k 值）</li>
+        <li>量測鈉燈 D 線波長 λ</li>
+        <li>觀察清晰↔模糊週期，估算 Δλ</li>
+        <li>量測空氣折射率 n₀</li>
+      </ul>
+    </div>
+    <div class="card card-blue">
+      <div class="card-label">Part B — Fabry–Perot</div>
+      <div class="card-title">Fabry–Perot 干涉儀</div>
+      <p style="font-size:0.93rem;">光在兩高反射平面間多次往返，形成比 Michelson 更尖銳的多光束干涉條紋。</p>
+      <ul style="font-size:0.9rem;padding-left:18px;line-height:2.2">
+        <li>建立並調整 F-P 同心圓條紋</li>
+        <li>精確量測鈉燈雙線波長差 Δλ</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="compare-grid">
+    <div class="compare-card">
+      <div class="compare-header red">⬡ Michelson</div>
+      <div class="compare-body">
+        <div class="compare-row"><strong>雙光束</strong>干涉（Two-beam）</div>
+        <div class="compare-row">條紋為正弦型，峰值較寬</div>
+        <div class="compare-row">分辨率相對較低</div>
+        <div class="compare-row">可量測波長、折射率</div>
+        <div class="compare-row">難以分辨 0.6 nm 的雙線差</div>
+      </div>
+    </div>
+    <div class="compare-card">
+      <div class="compare-header blue">◈ Fabry–Perot</div>
+      <div class="compare-body">
+        <div class="compare-row"><strong>多光束</strong>干涉（Multi-beam）</div>
+        <div class="compare-row">條紋尖銳（Airy 函數型）</div>
+        <div class="compare-row">分辨率極高（高 Finesse）</div>
+        <div class="compare-row">適合量測極小波長差 Δλ</div>
+        <div class="compare-row">無法量測單一絕對波長</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>核心公式一覽</h3>
+  <div class="formula-box">
+<span class="comment">// 1. Michelson：波長量測</span>
+<span class="hl">λ = 2d / N = 2kΔx / N</span>
+<span class="comment">   d = 鏡面位移, N = 條紋移動數, k = 校準比例係數</span>
+
+<span class="comment">// 2. Michelson：空氣折射率</span>
+<span class="hl">n₀ = 1 + λΔN / [2l(1 − P/P₀)]</span>
+<span class="comment">   l = 空氣腔長, ΔN = 條紋總移動數</span>
+<span class="comment">   P = 當前壓力, P₀ = 標準大氣壓</span>
+
+<span class="comment">// 3. Michelson / FP：雙線波長差</span>
+<span class="hl">Δλ = λ₁λ₂ / (2Δd)</span>
+<span class="comment">   Δd = 兩次條紋清晰（重合）之間的板距差</span>
+  </div>
+
+  <h3>儀器設備</h3>
+  <div class="setup-container">
+    <div class="setup-panel">
+      <div class="setup-header">INSTRUMENTS</div>
+      <div class="setup-body">
+        <ul class="setup-list">
+          <li>Michelson 干涉儀（含補償鏡）</li>
+          <li>Fabry–Perot 干涉儀</li>
+          <li>He-Ne 雷射（λ = 632.8 nm）</li>
+          <li>鈉燈（Sodium lamp）</li>
+          <li>螺旋測微器（Micrometer screw）</li>
+          <li>空氣腔與氣壓計</li>
+          <li>CCD 相機與電腦螢幕（或直接以肉眼觀察屏）</li>
+          <li>毛玻璃（散射片）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="setup-panel">
+      <div class="setup-header">理論值（THEORETICAL VALUES）</div>
+      <div class="setup-body">
+        <ul class="setup-list">
+          <li>He-Ne 雷射波長：λ = <strong>632.8 nm</strong></li>
+          <li>鈉燈 D1：λ₁ = <strong>589.592 nm</strong></li>
+          <li>鈉燈 D2：λ₂ = <strong>588.995 nm</strong></li>
+          <li>鈉燈雙線平均：λ̄ = <strong>589.294 nm</strong></li>
+          <li>鈉燈雙線差：Δλ = λ₁ − λ₂ = <strong>0.597 nm</strong></li>
+          <li>標準大氣壓：P₀ = <strong>101.325 kPa</strong></li>
+          <li>空氣折射率：n₀ = <strong>1.000293</strong></li>
+          <li>k 平台機械標示值：k = 1 mm / 25.4 μm ≈ <strong>39.37 μm/mm</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ -->
+<!--  TAB 2: MICHELSON (整合：原理 + 步驟 + 數據 + 圖表)   -->
+<!-- ══════════════════════════════════════════ -->
+<section id="tab-michelson" class="section">
+  <h2><span class="num">02</span>Michelson 干涉儀</h2>
+
+  <h3>儀器架構</h3>
+  <p>Michelson 干涉儀由四個核心元件組成：<strong>分光鏡（Beam Splitter）</strong>、<strong>補償鏡（Compensator）</strong>、<strong>固定鏡（Fixed Mirror）</strong>、<strong>可移動鏡（Movable Mirror）</strong>。光路如下圖所示。</p>
+
+  <div class="diagram-wrapper">
+    <svg width="600" height="440" viewBox="0 0 600 440" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Serif TC',serif" font-size="11">
+      <rect width="600" height="440" fill="#fdf4d8" rx="8" stroke="#c9b87a" stroke-width="1"/>
+
+      <!-- He-Ne Laser left -->
+      <rect x="30" y="220" width="78" height="30" rx="3" fill="#3a3a3a" stroke="#000" stroke-width="1"/>
+      <circle cx="100" cy="235" r="5" fill="#ff3030"/>
+      <text x="69" y="240" text-anchor="middle" fill="#fdf4d8" font-size="10" font-weight="bold">He-Ne</text>
+
+      <!-- Beam to BS (horizontal at y=235, hits V LEFT arm / BS at x=280) -->
+      <line x1="108" y1="235" x2="278" y2="235" stroke="#ff3030" stroke-width="2.5"/>
+      <polygon points="271,231 281,235 271,239" fill="#ff3030"/>
+
+      <!-- V-shape (apex at BOTTOM, opening upward, like ⋁) -->
+      <!-- Beam Splitter: V LEFT arm -->
+      <line x1="290" y1="255" x2="270" y2="215" stroke="#7c8fb5" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+      <text x="170" y="200" fill="#3a4a6a" font-size="10" font-weight="bold">Beam Splitter</text>
+      <text x="170" y="213" fill="#3a4a6a" font-size="9">（分光鏡 / V 左半）</text>
+
+      <!-- Compensator: V RIGHT arm (在可移動鏡那臂的光路上) -->
+      <line x1="290" y1="255" x2="310" y2="215" stroke="#a8a8a8" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+      <text x="345" y="200" fill="#555" font-size="10" font-weight="bold">Compensator</text>
+      <text x="345" y="213" fill="#555" font-size="9">（補償鏡 / V 右半）</text>
+
+      <!-- Beam to movable mirror: from BS(x=280), passes through Compensator(x=300), then continues right -->
+      <line x1="282" y1="235" x2="490" y2="235" stroke="#ff3030" stroke-width="2.5"/>
+      <line x1="490" y1="235" x2="282" y2="235" stroke="#ff7050" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.8"/>
+
+      <!-- Movable Mirror right -->
+      <rect x="490" y="208" width="14" height="54" rx="1" fill="#1a1a1a"/>
+      <line x1="490" y1="210" x2="490" y2="260" stroke="#c0c0c0" stroke-width="2"/>
+      <text x="525" y="220" fill="#1a1a1a" font-size="10" font-weight="bold">Movable</text>
+      <text x="525" y="233" fill="#1a1a1a" font-size="10" font-weight="bold">  Mirror</text>
+      <text x="525" y="248" fill="#3a3a3a" font-size="9">（可移動鏡）</text>
+      <text x="525" y="263" fill="#a04020" font-size="9">← d 微調</text>
+
+      <!-- Beam DOWN to fixed mirror: directly from BS at x=280, NO compensator -->
+      <line x1="280" y1="240" x2="280" y2="370" stroke="#ff3030" stroke-width="2.5"/>
+      <line x1="280" y1="370" x2="280" y2="240" stroke="#ff7050" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.8"/>
+
+      <!-- Fixed Mirror bottom (centered at x=280) -->
+      <rect x="252" y="370" width="56" height="14" rx="1" fill="#1a1a1a"/>
+      <line x1="254" y1="372" x2="306" y2="372" stroke="#c0c0c0" stroke-width="2"/>
+      <text x="280" y="402" text-anchor="middle" fill="#1a1a1a" font-size="10" font-weight="bold">Fixed Mirror</text>
+      <text x="280" y="415" text-anchor="middle" fill="#3a3a3a" font-size="9">（固定鏡）</text>
+
+      <!-- Output beam straight UP to viewing screen (from BS at x=280) -->
+      <line x1="280" y1="222" x2="280" y2="148" stroke="#d97706" stroke-width="3"/>
+      <polygon points="276,153 280,143 284,153" fill="#d97706"/>
+
+      <!-- Viewing screen (top, upright, centered above BS) -->
+      <rect x="230" y="60" width="100" height="70" rx="3" fill="#fff5e0" stroke="#866f30" stroke-width="1.5"/>
+      <ellipse cx="280" cy="95" rx="22" ry="14" fill="none" stroke="#d97706" stroke-width="1.3"/>
+      <ellipse cx="280" cy="95" rx="14" ry="9" fill="none" stroke="#d97706" stroke-width="1.1"/>
+      <ellipse cx="280" cy="95" rx="6" ry="4" fill="#d97706" opacity="0.7"/>
+      <text x="280" y="148" text-anchor="middle" fill="#7a4020" font-size="10" font-weight="bold">Viewing Screen</text>
+      <text x="280" y="161" text-anchor="middle" fill="#7a4020" font-size="9">（觀察屏）</text>
+
+      <!-- Legend -->
+      <rect x="430" y="320" width="150" height="80" rx="4" fill="white" stroke="#c9b87a"/>
+      <text x="436" y="338" fill="#5a4810" font-size="10" font-weight="bold">圖例</text>
+      <line x1="436" y1="350" x2="456" y2="350" stroke="#ff3030" stroke-width="2.5"/>
+      <text x="461" y="353" fill="#3a3a3a" font-size="9">入射光（向前）</text>
+      <line x1="436" y1="368" x2="456" y2="368" stroke="#ff7050" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <text x="461" y="371" fill="#3a3a3a" font-size="9">反射回程</text>
+      <line x1="436" y1="386" x2="456" y2="386" stroke="#d97706" stroke-width="2.5"/>
+      <text x="461" y="389" fill="#3a3a3a" font-size="9">干涉輸出</text>
+    </svg>
+    <div class="diagram-caption">圖：Michelson 干涉儀光路示意。雷射經分光鏡分為兩路：透射光通過補償鏡至可移動鏡，反射光直接至固定鏡。兩路反射回分光鏡重合後射至觀察屏。</div>
+  </div>
+
+  <h3>光程差與干涉條件</h3>
+  <p>將可移動鏡移動距離 <span class="equation">d</span>，屏幕上與光軸夾角 <span class="equation">φ</span> 方向的光程差為：</p>
+  <div class="formula-box">
+Δ = 2d cosφ    <span class="comment">// φ ≈ 0（軸上觀測）→ Δ = 2d</span>
+
+建設性干涉條件（含反射相位差 π）：
+<span class="hl">2d cosφ = (n + ½)λ</span>
+  </div>
+  <p>其中 ½ 項來自其中一路光在反射時多出一個 π 相位差（半波損失），並非幾何路徑多出 λ/2。不同 φ 角對應不同光程差，因此螢幕上呈現同心圓條紋（等傾干涉）。</p>
+
+  <h3>A. 校準螺旋測微器（k 值）</h3>
+  <p>螺旋測微器的刻度讀值 Δx 並非直接等於鏡面位移 d，需先以 He-Ne 雷射（已知 λ = 632.8 nm）校準比例係數 k，定義為 <span class="equation">d = k · Δx</span>。</p>
+  <div class="formula-box">
+<span class="hl">k = Nλ / (2Δx)</span>
+<span class="comment">   N = 計數條紋數（建議每次計 40 條）</span>
+<span class="comment">   Δx = 對應螺旋測微器讀值改變量（mm）</span>
+<span class="comment">   多次測量取平均</span>
+  </div>
+
+  <h3>B. 量測鈉燈 D 線波長</h3>
+  <p>換光源為鈉燈，在 CCD 前放置毛玻璃，使條紋更清晰。緩慢轉動測微器，計數 N 條條紋通過固定觀察點，讀取 Δx：</p>
+  <div class="formula-box">
+<span class="hl">λ = 2kΔx / N</span>
+<span class="comment">   建議 N = 20 或 50 條，多次測量平均</span>
+  </div>
+
+  <h3>C. 觀察清晰↔模糊週期（估算 Δλ）</h3>
+  <p>鈉燈 D1、D2 兩波長只差 0.6 nm，形成的兩組條紋會週期性地從清晰變模糊再變清晰。記錄兩次「最清晰」之間的鏡面位移 Δd，代入：</p>
+  <div class="formula-box">
+<span class="hl">Δλ = λ² / (2Δd)  ≈ λ₁λ₂ / (2Δd)</span>
+<span class="comment">   Δd = 清晰→模糊→清晰 完整一個週期對應的鏡面位移</span>
+  </div>
+
+  <h3>D. 量測空氣折射率 n₀</h3>
+  <p>在一臂中放入長度 l 的空氣腔，改變腔內壓力，計數條紋總移動數 ΔN：</p>
+  <div class="formula-box">
+<span class="hl">n₀ = 1 + λΔN / [2l(1 − P/P₀)]</span>
+<span class="comment">   λ = 光源波長</span>
+<span class="comment">   l = 空氣腔長度</span>
+<span class="comment">   P = 實驗壓力, P₀ = 標準大氣壓</span>
+<span class="comment">   ΔN = 壓力變化過程中條紋總移動數</span>
+  </div>
+
+  <div class="card card-gold" style="margin-top:20px;">
+    <div class="card-label">折射率公式推導</div>
+    <p style="font-size:0.93rem;">空氣折射率與壓力近似線性：<span class="equation">n(P) = 1 + (n₀−1)·P/P₀</span><br>
+    壓力改變 → 折射率改變 Δn = (n₀−1)(1−P/P₀)<br>
+    光程差改變：ΔL = 2l·Δn（光在腔中往返兩次）<br>
+    對應條紋數：ΔN = ΔL/λ → 整理得上式。</p>
+  </div>
+
+  <hr class="divider">
+
+  <h3>實驗步驟</h3>
+
+  <!-- MICHELSON SETUP VISUAL — 依實際 ALPHA Interferometer 照片重繪 -->
+  <h3>Part A：Michelson 干涉儀架設圖</h3>
+  <p>實際架設：雷射在左側、中央為 V 字型排列的分光鏡與補償鏡、可移動鏡在右側、固定鏡在下方、觀察屏在上方。</p>
+
+  <div class="diagram-wrapper">
+    <svg width="620" height="480" viewBox="0 0 620 480" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Serif TC',serif" font-size="11">
+      <!-- Cream optical table -->
+      <rect width="620" height="480" fill="#fdf4d8" rx="8" stroke="#c9b87a" stroke-width="1"/>
+      <!-- Mounting holes pattern -->
+      <g fill="#d4be7a" opacity="0.4">
+        <circle cx="80" cy="50" r="1.8"/><circle cx="140" cy="50" r="1.8"/><circle cx="200" cy="50" r="1.8"/>
+        <circle cx="420" cy="50" r="1.8"/><circle cx="480" cy="50" r="1.8"/><circle cx="540" cy="50" r="1.8"/>
+        <circle cx="80" cy="430" r="1.8"/><circle cx="140" cy="430" r="1.8"/>
+        <circle cx="480" cy="430" r="1.8"/><circle cx="540" cy="430" r="1.8"/>
+      </g>
+
+      <!-- Title strip -->
+      <rect x="430" y="20" width="180" height="22" rx="2" fill="#5a4810"/>
+      <text x="520" y="36" text-anchor="middle" fill="#fdf4d8" font-size="11" font-weight="bold" letter-spacing="2">ALPHA INTERFEROMETER</text>
+
+      <!-- ① He-Ne Laser (left side) -->
+      <rect x="30" y="220" width="78" height="30" rx="3" fill="#3a3a3a" stroke="#000" stroke-width="1"/>
+      <circle cx="100" cy="235" r="5" fill="#ff3030" stroke="#a01010" stroke-width="1"/>
+      <text x="69" y="240" text-anchor="middle" fill="#fdf4d8" font-size="10" font-weight="bold">He-Ne</text>
+      <text x="69" y="210" text-anchor="middle" fill="#7a4020" font-size="10" font-weight="bold">① 光源</text>
+      <text x="69" y="265" text-anchor="middle" fill="#7a4020" font-size="9">λ = 633 nm</text>
+
+      <!-- Beam from laser to BS (horizontal at y=235, hits V left arm at x=280) -->
+      <line x1="108" y1="235" x2="278" y2="235" stroke="#ff3030" stroke-width="2.5"/>
+      <polygon points="271,231 281,235 271,239" fill="#ff3030"/>
+
+      <!-- V-shape (apex at bottom, opening upward) -->
+      <!-- ② Beam Splitter: V LEFT arm (在左邊，照片中前方薄板) -->
+      <line x1="290" y1="255" x2="270" y2="215" stroke="#7c8fb5" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+      <text x="170" y="200" fill="#3a4a6a" font-size="10" font-weight="bold">② Beam Splitter</text>
+      <text x="170" y="213" fill="#3a4a6a" font-size="9">（分光鏡 / V 左半）</text>
+
+      <!-- ③ Compensator: V RIGHT arm (在右邊，照片中標示 Compensator 的圓玻璃片) -->
+      <line x1="290" y1="255" x2="310" y2="215" stroke="#a8a8a8" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+      <text x="345" y="200" fill="#555" font-size="10" font-weight="bold">③ Compensator</text>
+      <text x="345" y="213" fill="#555" font-size="9">（補償鏡 / V 右半）</text>
+
+      <!-- Beam transmitted RIGHT to Movable Mirror: passes through Compensator (V right arm at x=300) -->
+      <line x1="282" y1="235" x2="490" y2="235" stroke="#ff3030" stroke-width="2.5"/>
+      <line x1="490" y1="235" x2="282" y2="235" stroke="#ff7050" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.8"/>
+
+      <!-- ④ Movable Mirror (right side, vertical) -->
+      <rect x="490" y="208" width="14" height="54" rx="1" fill="#1a1a1a" stroke="#000" stroke-width="1"/>
+      <line x1="490" y1="210" x2="490" y2="260" stroke="#c0c0c0" stroke-width="2"/>
+      <rect x="504" y="218" width="10" height="34" fill="#5a4810"/>
+      <text x="525" y="220" fill="#1a1a1a" font-size="10" font-weight="bold">④ Movable</text>
+      <text x="525" y="233" fill="#1a1a1a" font-size="10" font-weight="bold">  Mirror</text>
+      <text x="525" y="248" fill="#3a3a3a" font-size="9">（可移動鏡）</text>
+      <line x1="510" y1="265" x2="510" y2="280" stroke="#a04020" stroke-width="1.5"/>
+      <polygon points="506,277 510,283 514,277" fill="#a04020"/>
+      <text x="528" y="280" fill="#a04020" font-size="9">d 微調</text>
+
+      <!-- Beam DOWN to Fixed Mirror: from BS at x=280, straight down, NO compensator -->
+      <line x1="280" y1="248" x2="280" y2="378" stroke="#ff3030" stroke-width="2.5"/>
+      <line x1="280" y1="378" x2="280" y2="248" stroke="#ff7050" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.8"/>
+
+      <!-- ⑤ Fixed Mirror (bottom, on track, centered at x=280) -->
+      <rect x="210" y="395" width="200" height="20" rx="3" fill="#2a2a2a" stroke="#000" stroke-width="1"/>
+      <rect x="220" y="402" width="180" height="6" rx="1" fill="#4a4a4a"/>
+      <rect x="252" y="378" width="56" height="18" rx="1" fill="#1a1a1a" stroke="#000" stroke-width="1"/>
+      <line x1="254" y1="380" x2="306" y2="380" stroke="#c0c0c0" stroke-width="2"/>
+      <text x="280" y="432" text-anchor="middle" fill="#1a1a1a" font-size="10" font-weight="bold">⑤ Fixed Mirror</text>
+      <text x="280" y="445" text-anchor="middle" fill="#3a3a3a" font-size="9">（固定鏡）</text>
+
+      <!-- Output beam straight UP to Viewing Screen (from BS at x=280) -->
+      <line x1="280" y1="230" x2="280" y2="148" stroke="#d97706" stroke-width="3"/>
+      <polygon points="276,153 280,143 284,153" fill="#d97706"/>
+
+      <!-- ⑥ Viewing Screen (upright, centered above BS at x=280) -->
+      <rect x="230" y="60" width="100" height="72" rx="3" fill="#fff5e0" stroke="#866f30" stroke-width="1.5"/>
+      <text x="280" y="76" text-anchor="middle" fill="#866f30" font-size="7">VIEWING SCREEN</text>
+      <ellipse cx="280" cy="100" rx="22" ry="14" fill="none" stroke="#d97706" stroke-width="1.3"/>
+      <ellipse cx="280" cy="100" rx="14" ry="9" fill="none" stroke="#d97706" stroke-width="1.1"/>
+      <ellipse cx="280" cy="100" rx="6" ry="4" fill="#d97706" opacity="0.7"/>
+      <text x="280" y="150" text-anchor="middle" fill="#7a4020" font-size="10" font-weight="bold">⑥ Viewing Screen</text>
+      <text x="280" y="163" text-anchor="middle" fill="#7a4020" font-size="9">（觀察屏）</text>
+
+      <!-- Legend -->
+      <rect x="40" y="320" width="160" height="100" rx="4" fill="white" stroke="#c9b87a"/>
+      <text x="48" y="338" fill="#5a4810" font-size="10" font-weight="bold">圖例</text>
+      <line x1="48" y1="350" x2="68" y2="350" stroke="#ff3030" stroke-width="2.5"/>
+      <text x="73" y="353" fill="#3a3a3a" font-size="9">入射光（向前）</text>
+      <line x1="48" y1="368" x2="68" y2="368" stroke="#ff7050" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <text x="73" y="371" fill="#3a3a3a" font-size="9">反射回程</text>
+      <line x1="48" y1="386" x2="68" y2="386" stroke="#d97706" stroke-width="2.5"/>
+      <text x="73" y="389" fill="#3a3a3a" font-size="9">干涉輸出</text>
+      <text x="48" y="408" fill="#7a4020" font-size="8" font-style="italic">※ V 字 = BS + 補償鏡</text>
+    </svg>
+    <div class="diagram-caption">圖：Michelson 干涉儀架設示意。雷射從左射入分光鏡（V 左半），透射光通過補償鏡（V 右半）後至可移動鏡，反射光直接至下方固定鏡，兩路返回後在分光鏡重合並射至上方觀察屏。</div>
+  </div>
+
+  <ol class="steps">
+    <li class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <div class="step-title">架設光路、對準兩光斑</div>
+        <div class="step-desc">打開 He-Ne 雷射（λ = 632.8 nm），先不放凸透鏡。</div>
+        <div class="step-detail">
+          <div class="step-detail-row"><span class="step-detail-label">操作</span><span class="step-detail-text">調整分光鏡與兩反射鏡的高度與傾角，使兩光束在觀察屏上的光斑位置完全重合。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">判斷</span><span class="step-detail-text">屏上的兩個亮斑應該疊在一起變成一個點，且光斑會閃爍或有干涉花紋。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">為什麼</span><span class="step-detail-text">兩臂光束沒有疊在一起就不會干涉。先用點光源（未擴束的雷射）對準比較容易，因為光斑小、位置好判斷。</span></div>
+        </div>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <div class="step-title">插入凸透鏡，擴束後出現同心圓條紋</div>
+        <div class="step-desc">在雷射與分光鏡之間插入凸透鏡，把光束擴成一個光圈。</div>
+        <div class="step-detail">
+          <div class="step-detail-row"><span class="step-detail-label">操作</span><span class="step-detail-text">微調固定鏡的兩個旋鈕（水平 + 垂直），直到觀察屏上的條紋變成同心圓而非斜紋或直線。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">判斷</span><span class="step-detail-text">條紋形狀：同心圓 → 兩鏡幾乎垂直；橢圓或斜紋 → 兩鏡角度偏差；直線 → 偏差更大。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">為什麼</span><span class="step-detail-text">擴束後光以不同角度入射，每個角度對應不同光程差，產生等傾干涉的同心圓圖案。鏡子越平行，圓心越清楚。</span></div>
+        </div>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <div class="step-title">校準螺旋測微器（量 k 值）</div>
+        <div class="step-desc">用 He-Ne 雷射，旋轉測微器讓平移台移動，計數通過固定觀察點的條紋數，講義要求總共數 <strong>200 條</strong>，可分段測量。</div>
+        <div class="step-detail">
+          <div class="step-detail-row"><span class="step-detail-label">讀值</span><span class="step-detail-text">測微器讀值 = 主尺刻度（mm） + 旋轉套筒刻度（一圈 = 1 mm，估讀到 0.01 mm）。例如主尺 5 mm + 套筒 0.42 mm = 5.42 mm。Δx 是兩次讀值相減。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">操作</span><span class="step-detail-text">朝同一方向慢慢轉，邊轉邊在心裡數通過固定參考點的暗紋或亮紋。建議分 4 段，每段 50 條，分別記錄起點與終點讀值。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">判斷</span><span class="step-detail-text">每轉一點，條紋必須真的有跟著移動。若刻度改變但條紋停在原地 → 機械空回，這段不算。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">為什麼</span><span class="step-detail-text">總共 200 條而非 50 條：減少計數的相對誤差。分段是因為螺旋測微器各區段機械放大率略有差異，分段可看出 k 值的均勻性，並選用實際量測會用到的區段。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">公式</span><span class="step-detail-text"><span class="step-formula">k = Nλ / (2Δx)</span>，多段取平均。理論值 k = 1 mm / 25.4 μm ≈ 39.37 μm/mm。</span></div>
+        </div>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <div class="step-title">換鈉燈，量鈉燈 D 線平均波長</div>
+        <div class="step-desc">移除凸透鏡，把光源換成鈉燈。觀測方式有兩種：直接以肉眼看觀察屏、或用 CCD 鏡頭接收後在電腦螢幕上看。</div>
+        <div class="step-detail">
+          <div class="step-detail-row"><span class="step-detail-label">觀測</span><span class="step-detail-text"><strong>肉眼：</strong>條紋直接打在觀察屏上，眼睛從適當距離看屏。優點是即時、視野大；缺點是長時間數條紋眼睛容易疲勞、容易數錯。<br><strong>CCD：</strong>CCD 鏡頭對著條紋投影面，前面加毛玻璃讓光均勻、避免眩光。電腦螢幕看條紋的好處是可放大、減少疲勞、可錄影回放對照。CCD 容易飽和，要調整曝光時間與增益。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">操作</span><span class="step-detail-text">在觀察屏（或 CCD 螢幕）看到清晰條紋後，朝同一方向慢慢轉測微器，記錄起始讀值 x₁，數 50（或 100）條條紋後停下，記錄終點讀值 x₂。Δx = x₂ − x₁。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">判斷</span><span class="step-detail-text">看不到條紋：可能是兩臂光程差超過鈉燈相干長度（鈉燈相干長度比雷射短很多）。先用雷射把兩臂調到大致等長，再換鈉燈。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">為什麼</span><span class="step-detail-text">毛玻璃是為了把鈉燈做成擴展面光源，符合等傾干涉的觀察條件；點光源（雷射）反而看不到完整的同心圓。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">公式</span><span class="step-detail-text"><span class="step-formula">λ = 2kΔx / N</span>。結果通常落在 D1 (589.592 nm) 與 D2 (588.995 nm) 之間，是兩線的有效平均波長。</span></div>
+        </div>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <div class="step-title">觀察清晰↔模糊週期，估算雙線波長差 Δλ</div>
+        <div class="step-desc">繼續同向慢轉測微器，觀察條紋對比週期性「清晰 → 模糊 → 清晰」。</div>
+        <div class="step-detail">
+          <div class="step-detail-row"><span class="step-detail-label">操作</span><span class="step-detail-text">轉到「最清晰」位置時記錄讀值 x₁，繼續轉，下一次「最清晰」記錄 x₂。Δx = x₂ − x₁，Δd = k·Δx。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">判斷</span><span class="step-detail-text">「清晰」= 兩組條紋（D1、D2）重疊時對比最強；「模糊」= 兩組條紋錯開半個週期、亮環疊暗環，條紋幾乎消失。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">為什麼</span><span class="step-detail-text">兩波長分別形成自己的條紋，光程差累積到一定量時兩組相位差剛好 2π，再次重合即為清晰。完整一個週期對應 Δd 約 290 μm（依數據而定）。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">公式</span><span class="step-detail-text"><span class="step-formula">Δλ = λ² / (2Δd)</span>，理論值 0.597 nm。</span></div>
+        </div>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <div class="step-title">放入空氣腔，量空氣折射率 n₀</div>
+        <div class="step-desc">把空氣腔插入<strong>可移動鏡那臂</strong>的光路上，用 He-Ne 雷射作光源。</div>
+        <div class="step-detail">
+          <div class="step-detail-row"><span class="step-detail-label">操作</span><span class="step-detail-text">先記下大氣壓 P₀，再用抽氣裝置將空氣腔抽到較低壓力 P（記錄壓力計讀值）。緩慢洩氣回大氣壓，計數整個過程通過固定點的條紋變化數 ΔN。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">讀值</span><span class="step-detail-text">壓力計顯示的是<strong>絕對壓力 P</strong>（不是表壓），P₀ = 101.325 kPa 為大氣壓。空氣腔長度 l 要實際量（用尺量腔體外殼，注意是光在腔內的實際路徑長）。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">為什麼</span><span class="step-detail-text">壓力變 → 折射率變 → 該臂光程差變 → 條紋移動。空氣腔放在可移動鏡那臂的水平光路上（空間長、易插入），另一臂作為參考。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">公式</span><span class="step-detail-text"><span class="step-formula">n₀ = 1 + λΔN / [2l(1 − P/P₀)]</span>，理論值 1.000293。光在腔內往返兩次，所以光程是 2l。</span></div>
+        </div>
+      </div>
+    </li>
+  </ol>
+
+
+  <hr class="divider">
+
+  <h3>範例數據</h3>
+
+  <p>以下範例數據來自不同次的實驗，可作為對照。</p>
+
+  <h3>表一：螺旋測微器校準（k 值）</h3>
+  <p>光源：He-Ne 雷射（λ = 632.8 nm）。校準公式：k = Nλ / (2Δx)，其中 N 為條紋數、Δx 為對應測微器讀值變化。平台機械標示值 k = 1 mm / 25.4 μm ≈ 39.37（μm/mm）。</p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>樣本</th><th>N</th><th>Δx (mm)</th><th>k (μm/mm)</th><th>vs 理論 39.37</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>樣本一</td><td class="num-cell">50</td><td class="num-cell">0.420</td><td class="highlight">37.68</td><td class="num-cell">−4.3%</td></tr>
+        <tr><td>樣本一</td><td class="num-cell">50</td><td class="num-cell">0.400</td><td class="highlight">39.56</td><td class="num-cell">+0.5%</td></tr>
+        <tr><td>樣本一</td><td class="num-cell">50</td><td class="num-cell">0.405</td><td class="highlight">39.07</td><td class="num-cell">−0.8%</td></tr>
+        <tr><td>樣本一</td><td class="num-cell">50</td><td class="num-cell">0.410</td><td class="highlight">38.60</td><td class="num-cell">−2.0%</td></tr>
+        <tr style="background:#fef9ec"><td><strong>樣本一平均</strong></td><td>—</td><td>—</td><td class="highlight"><strong>38.73</strong></td><td class="num-cell"><strong>−1.6%</strong></td></tr>
+        <tr><td>樣本二</td><td colspan="2">不同次校準</td><td class="highlight">35.97</td><td class="num-cell">−8.6%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:0.92rem;color:var(--muted);">k 值因儀器局部位置不同（螺旋測微器各區段機械放大率不均勻）而有差異。校準應在實際量測使用的刻度範圍內進行。</p>
+
+  <h3>表二：鈉燈 D 線波長量測</h3>
+  <p>D1 = 589.592 nm，D2 = 588.995 nm，平均理論值 ≈ 589.3 nm。</p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>樣本</th><th>Δd (μm)</th><th>N</th><th>λ (nm)</th><th>vs 理論 589.3</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>樣本一</td><td class="num-cell">14.717</td><td class="num-cell">50</td><td class="highlight">588.7</td><td class="num-cell">−0.1%</td></tr>
+        <tr><td>樣本一</td><td class="num-cell">14.910</td><td class="num-cell">50</td><td class="highlight">596.4</td><td class="num-cell">+1.2%</td></tr>
+        <tr><td>樣本一</td><td class="num-cell">14.523</td><td class="num-cell">50</td><td class="highlight">580.9</td><td class="num-cell">−1.4%</td></tr>
+        <tr style="background:#fef9ec"><td><strong>樣本一平均</strong></td><td>—</td><td>—</td><td class="highlight"><strong>588.7</strong></td><td class="num-cell"><strong>−0.1%</strong></td></tr>
+        <tr><td>樣本二</td><td class="num-cell">12.8</td><td class="num-cell">50</td><td class="highlight">511</td><td class="num-cell">−13.3%</td></tr>
+        <tr><td>樣本二</td><td class="num-cell">27.7</td><td class="num-cell">100</td><td class="highlight">554</td><td class="num-cell">−6.0%</td></tr>
+        <tr><td>樣本二</td><td class="num-cell">29.1</td><td class="num-cell">100</td><td class="highlight">583</td><td class="num-cell">−1.1%</td></tr>
+        <tr style="background:#fef9ec"><td><strong>樣本二平均</strong></td><td>—</td><td>—</td><td class="highlight"><strong>549</strong></td><td class="num-cell"><strong>−6.8%</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:0.92rem;color:var(--muted);">量測結果通常落在 D1、D2 之間，可解釋為兩線無法分辨時的有效平均波長。樣本之間差異主要來自 k 值校準誤差。</p>
+
+  <h3>表三：Michelson 法量測 Δλ（清晰↔模糊週期）</h3>
+  <p>理論值 Δλ = 0.597 nm。</p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>樣本</th><th>cycle</th><th>Δd (μm)</th><th>Δλ (nm)</th><th>vs 理論 0.597</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>樣本一</td><td class="num-cell">1</td><td class="num-cell">304.6</td><td class="highlight">0.588</td><td class="num-cell">−1.5%</td></tr>
+        <tr><td>樣本一</td><td class="num-cell">1</td><td class="num-cell">290.3</td><td class="highlight">0.617</td><td class="num-cell">+3.4%</td></tr>
+        <tr style="background:#fef9ec"><td><strong>樣本一平均</strong></td><td>—</td><td>—</td><td class="highlight"><strong>0.602</strong></td><td class="num-cell"><strong>+0.9%</strong></td></tr>
+        <tr><td>樣本二</td><td class="num-cell">1</td><td class="num-cell">255</td><td class="highlight">0.680</td><td class="num-cell">+13.9%</td></tr>
+        <tr><td>樣本二</td><td class="num-cell">1</td><td class="num-cell">247</td><td class="highlight">0.702</td><td class="num-cell">+17.6%</td></tr>
+        <tr><td>樣本二</td><td class="num-cell">2</td><td class="num-cell">504</td><td class="highlight">0.689</td><td class="num-cell">+15.4%</td></tr>
+        <tr style="background:#fef9ec"><td><strong>樣本二平均</strong></td><td>—</td><td>—</td><td class="highlight"><strong>0.690</strong></td><td class="num-cell"><strong>+15.6%</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>表四：空氣折射率 n₀</h3>
+  <p>理論值 n₀ = 1.000293。</p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>樣本</th><th>l (cm)</th><th>ΔN</th><th>P (kPa)</th><th>λ (nm)</th><th>n₀ (實驗)</th><th>vs 理論</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>樣本一</td><td class="num-cell">3.0</td><td class="num-cell">10</td><td class="num-cell">64</td><td class="num-cell">633</td><td class="highlight">1.000271</td><td class="num-cell">−7.5%</td></tr>
+        <tr><td>樣本二</td><td class="num-cell">34</td><td class="num-cell">16</td><td class="num-cell">46.325</td><td class="num-cell">633</td><td class="highlight">1.000254</td><td class="num-cell">−13.3%</td></tr>
+        <tr><td>樣本三</td><td class="num-cell">3.5</td><td class="num-cell">18</td><td class="num-cell">18.825</td><td class="num-cell">633</td><td class="highlight">1.000212</td><td class="num-cell">−27.6%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <hr class="divider">
+
+  <h3>圖表分析</h3>
+
+  <h3>圖：鏡面位移 d 與條紋數 N 的線性關係</h3>
+  <div class="chart-card">
+    <div class="chart-title">d vs. N（波長量測擬合）</div>
+    <div class="chart-sub">d = N·λ/2，斜率 = λ/2 ≈ 295 nm。散點為模擬量測值，實線為理想擬合。</div>
+    <canvas id="chartLinear"></canvas>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ -->
+<!--  TAB 3: FABRY–PEROT (整合：原理 + 步驟 + 數據)          -->
+<!-- ══════════════════════════════════════════ -->
+<section id="tab-fabry" class="section">
+  <h2><span class="num">03</span>Fabry–Perot 干涉儀</h2>
+
+  <h3>儀器架構與多光束干涉</h3>
+  <p>Fabry–Perot 干涉儀由兩個彼此平行、高反射率的光學平面構成，中間形成可調厚度的空氣薄膜。光在兩平面間多次往返後疊加，只有在共振條件精確滿足時才出現明顯透射峰。</p>
+
+  <div class="diagram-wrapper">
+    <svg width="560" height="280" viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Serif TC',serif" font-size="11">
+      <rect width="560" height="280" fill="#fdf4d8" rx="8" stroke="#c9b87a" stroke-width="1"/>
+
+      <!-- Sodium lamp -->
+      <ellipse cx="55" cy="140" rx="32" ry="32" fill="#ffe566" opacity="0.55" stroke="#c8922a" stroke-width="1.5"/>
+      <text x="55" y="135" text-anchor="middle" fill="#7a4020" font-size="10" font-weight="bold">擴展光源</text>
+      <text x="55" y="148" text-anchor="middle" fill="#7a4020" font-size="9">+毛玻璃</text>
+
+      <!-- Diffused rays -->
+      <line x1="87" y1="125" x2="160" y2="125" stroke="#f5a623" stroke-width="1.5" opacity="0.7"/>
+      <line x1="87" y1="140" x2="160" y2="140" stroke="#f5a623" stroke-width="2"/>
+      <line x1="87" y1="155" x2="160" y2="155" stroke="#f5a623" stroke-width="1.5" opacity="0.7"/>
+
+      <!-- Mirror 1 -->
+      <rect x="160" y="60" width="10" height="160" rx="2" fill="#5a7ab8" stroke="#2a4a78" stroke-width="1"/>
+      <text x="135" y="50" fill="#2a4a78" font-size="11" font-weight="bold">M₁</text>
+      <text x="115" y="240" fill="#2a4a78" font-size="9">高反射平面鏡</text>
+
+      <!-- Spacing label d -->
+      <line x1="170" y1="50" x2="350" y2="50" stroke="#866f30" stroke-width="0.8"/>
+      <polygon points="174,47 168,50 174,53" fill="#866f30"/>
+      <polygon points="346,47 352,50 346,53" fill="#866f30"/>
+      <text x="260" y="42" text-anchor="middle" fill="#866f30" font-size="10">d（板間距）</text>
+
+      <!-- Multiple bouncing rays -->
+      <line x1="170" y1="135" x2="350" y2="135" stroke="#f5a623" stroke-width="2"/>
+      <line x1="350" y1="135" x2="170" y2="143" stroke="#d97706" stroke-width="1.5" opacity="0.85"/>
+      <line x1="170" y1="143" x2="350" y2="143" stroke="#d97706" stroke-width="1.3" opacity="0.7"/>
+      <line x1="350" y1="143" x2="170" y2="151" stroke="#b45a18" stroke-width="1.1" opacity="0.55"/>
+      <line x1="170" y1="151" x2="350" y2="151" stroke="#b45a18" stroke-width="1" opacity="0.4"/>
+
+      <!-- Mirror 2 -->
+      <rect x="350" y="60" width="10" height="160" rx="2" fill="#3a8a5a" stroke="#1a5a3a" stroke-width="1"/>
+      <text x="365" y="50" fill="#1a5a3a" font-size="11" font-weight="bold">M₂</text>
+      <text x="367" y="240" fill="#1a5a3a" font-size="9">高反射平面鏡</text>
+
+      <!-- Output transmitted beams -->
+      <line x1="360" y1="135" x2="450" y2="135" stroke="#f5a623" stroke-width="2"/>
+      <line x1="360" y1="143" x2="450" y2="143" stroke="#d97706" stroke-width="1.5"/>
+      <line x1="360" y1="151" x2="450" y2="151" stroke="#b45a18" stroke-width="1.2"/>
+
+      <!-- Lens -->
+      <ellipse cx="460" cy="143" rx="6" ry="40" fill="none" stroke="#3a4a6a" stroke-width="1.5"/>
+
+      <!-- Screen with rings -->
+      <rect x="495" y="100" width="56" height="86" rx="3" fill="#2c1810"/>
+      <circle cx="523" cy="143" r="3" fill="#f5a623"/>
+      <circle cx="523" cy="143" r="9" fill="none" stroke="#f5a623" stroke-width="1.3"/>
+      <circle cx="523" cy="143" r="16" fill="none" stroke="#f5a623" stroke-width="1" opacity="0.7"/>
+      <circle cx="523" cy="143" r="22" fill="none" stroke="#f5a623" stroke-width="0.8" opacity="0.5"/>
+
+      <!-- Description in middle -->
+      <text x="260" y="190" text-anchor="middle" fill="#1a3a6a" font-size="11" font-weight="bold">多次反射疊加</text>
+      <text x="260" y="205" text-anchor="middle" fill="#3a3a3a" font-size="9">→ 形成尖銳透射峰（Airy 函數）</text>
+    </svg>
+    <div class="diagram-caption">圖 7-2：Fabry–Perot 干涉儀原理。光在兩高反射鏡 M₁、M₂ 間多次往返，多次透射光疊加後形成尖銳的 Airy 函數型透射峰，對應觀測屏上的同心圓亮紋。</div>
+  </div>
+
+  <h3>透射強度公式與 Finesse</h3>
+  <div class="formula-box">
+<span class="comment">// 透射強度（Airy 函數）</span>
+Iₜ = Iᵢ(1−R)² / [1 + R² − 2R cosδ]
+
+<span class="comment">// 相位差</span>
+δ = (2π/λ) · 2nd cosθ
+
+<span class="comment">// Coefficient of finesse</span>
+F = 4R / (1+R)²
+
+<span class="comment">// Finesse（R > 0.5 時）</span>
+<span class="hl">ℱ ≈ π√R / (1−R)</span>
+<span class="comment">   R 越大 → Finesse 越大 → 條紋越尖銳 → 分辨率越高</span>
+
+<span class="comment">// Free Spectral Range（FSR）</span>
+(Δλ)_fsr = λ₀² / (2nd cosθ)
+  </div>
+
+  <h3>量測鈉燈雙線波長差 Δλ</h3>
+  <p>鈉燈 D1（589.592 nm）和 D2（588.995 nm）各自形成一組同心圓條紋。改變板距 d，兩組條紋會週期性地「重合 → 交錯 → 再重合」。記錄兩次重合之間的板距差 Δd：</p>
+  <div class="formula-box">
+<span class="hl">Δλ = λ₁λ₂ / (2Δd)</span>
+<span class="comment">   Δd = 兩次條紋「重合」之間的板間距改變量</span>
+<span class="comment">   λ₁ = 589.592 nm, λ₂ = 588.995 nm（使用理論值）</span>
+  </div>
+
+  <h3>Δλ 公式推導</h3>
+  <div class="card card-gold">
+    <div class="card-label">推導</div>
+    <p>方法一（本實驗報告常用寫法）：兩組條紋從重合到下一次重合，等效於 λ₁ 的條紋剛好比 λ₂ 多移動了一個完整週期：</p>
+    <div class="formula-box" style="margin:12px 0;">
+2Δd/λ₁ − 2Δd/λ₂ = 1
+⟹ 2Δd·(λ₂−λ₁)/(λ₁λ₂) = −1
+⟹ <span class="hl">Δλ = λ₁λ₂ / (2Δd)</span>
+    </div>
+    <p style="font-size:0.9rem;color:#555;">方法二（條件疊合法）：設板距 d 時，λ₁ 的第 m 階與 λ₂ 的第 m+1 階重合 → 2d = mλ₁ = (m+1)λ₂ → m = λ₂/Δλ → 代入下一次重合條件，同樣可得 Δλ = λ₁λ₂/(2Δd)。</p>
+  </div>
+
+  <hr class="divider">
+
+  <h3>實驗步驟</h3>
+
+
+  <h3>Part B：Fabry–Perot 干涉儀架設圖</h3>
+
+  <div class="diagram-wrapper">
+    <svg width="560" height="240" viewBox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Serif TC',serif" font-size="11">
+      <!-- Cream optical table background -->
+      <rect width="560" height="240" fill="#fdf4d8" rx="8" stroke="#c9b87a" stroke-width="1"/>
+
+      <!-- ① Sodium lamp + ground glass -->
+      <ellipse cx="58" cy="120" rx="32" ry="32" fill="#ffe566" opacity="0.55" stroke="#c8922a" stroke-width="1.5"/>
+      <text x="58" y="115" text-anchor="middle" fill="#7a4020" font-size="10" font-weight="bold">鈉燈</text>
+      <text x="58" y="128" text-anchor="middle" fill="#7a4020" font-size="9">Sodium lamp</text>
+      <text x="58" y="170" text-anchor="middle" fill="#7a4020" font-size="9">① 光源</text>
+
+      <!-- Ground glass (毛玻璃) -->
+      <rect x="100" y="92" width="6" height="56" fill="#d4c79a" stroke="#866f30" stroke-width="0.8"/>
+      <text x="103" y="85" text-anchor="middle" fill="#866f30" font-size="9">② 毛玻璃</text>
+      <text x="103" y="170" text-anchor="middle" fill="#866f30" font-size="8">擴散光源</text>
+
+      <!-- Diffused rays from lamp through ground glass -->
+      <line x1="106" y1="110" x2="180" y2="110" stroke="#f5a623" stroke-width="1.5" opacity="0.7"/>
+      <line x1="106" y1="120" x2="180" y2="120" stroke="#f5a623" stroke-width="2"/>
+      <line x1="106" y1="130" x2="180" y2="130" stroke="#f5a623" stroke-width="1.5" opacity="0.7"/>
+
+      <!-- ③ Mirror 1 (M1) -->
+      <rect x="180" y="70" width="10" height="100" rx="2" fill="#5a7ab8" stroke="#2a4a78" stroke-width="1"/>
+      <text x="185" y="60" text-anchor="middle" fill="#2a4a78" font-size="11" font-weight="bold">M₁</text>
+      <text x="185" y="190" text-anchor="middle" fill="#2a4a78" font-size="9">③ 高反射鏡</text>
+
+      <!-- Multiple bouncing rays between M1 and M2 -->
+      <line x1="190" y1="115" x2="320" y2="115" stroke="#f5a623" stroke-width="2"/>
+      <line x1="320" y1="115" x2="190" y2="123" stroke="#d97706" stroke-width="1.5" opacity="0.85"/>
+      <line x1="190" y1="123" x2="320" y2="123" stroke="#d97706" stroke-width="1.3" opacity="0.7"/>
+      <line x1="320" y1="123" x2="190" y2="131" stroke="#b45a18" stroke-width="1.1" opacity="0.6"/>
+
+      <!-- ④ Mirror 2 (M2, movable) -->
+      <rect x="320" y="70" width="10" height="100" rx="2" fill="#3a8a5a" stroke="#1a5a3a" stroke-width="1"/>
+      <text x="325" y="60" text-anchor="middle" fill="#1a5a3a" font-size="11" font-weight="bold">M₂</text>
+      <text x="325" y="190" text-anchor="middle" fill="#1a5a3a" font-size="9">④ 高反射鏡</text>
+      <text x="325" y="202" text-anchor="middle" fill="#1a5a3a" font-size="9">（可移動）</text>
+
+      <!-- d label -->
+      <line x1="190" y1="200" x2="320" y2="200" stroke="#866f30" stroke-width="1"/>
+      <polygon points="194,197 188,200 194,203" fill="#866f30"/>
+      <polygon points="316,197 322,200 316,203" fill="#866f30"/>
+      <text x="255" y="215" text-anchor="middle" fill="#866f30" font-size="10">d（板間距，可調）</text>
+
+      <!-- ⑤ Micrometer screw connected to M2 -->
+      <rect x="335" y="100" width="38" height="36" rx="3" fill="#d4be7a" stroke="#866f30" stroke-width="1"/>
+      <text x="354" y="115" text-anchor="middle" fill="#5a4810" font-size="8">⑤ 螺旋</text>
+      <text x="354" y="128" text-anchor="middle" fill="#5a4810" font-size="8">測微器</text>
+      <line x1="335" y1="118" x2="330" y2="118" stroke="#866f30" stroke-width="1.5"/>
+
+      <!-- Output transmitted beams -->
+      <line x1="330" y1="115" x2="430" y2="115" stroke="#f5a623" stroke-width="2"/>
+      <line x1="330" y1="123" x2="430" y2="123" stroke="#d97706" stroke-width="1.5"/>
+      <line x1="330" y1="131" x2="430" y2="131" stroke="#b45a18" stroke-width="1.2"/>
+
+      <!-- ⑥ Convex lens (focusing) -->
+      <ellipse cx="440" cy="123" rx="6" ry="36" fill="none" stroke="#3a4a6a" stroke-width="1.5"/>
+      <text x="440" y="80" text-anchor="middle" fill="#3a4a6a" font-size="9">⑥ 透鏡</text>
+
+      <!-- ⑦ Screen / CCD with concentric rings -->
+      <rect x="475" y="80" width="60" height="86" rx="3" fill="#2c1810" stroke="#000" stroke-width="0.8"/>
+      <circle cx="505" cy="123" r="3" fill="#f5a623"/>
+      <circle cx="505" cy="123" r="9" fill="none" stroke="#f5a623" stroke-width="1.3"/>
+      <circle cx="505" cy="123" r="16" fill="none" stroke="#f5a623" stroke-width="1" opacity="0.7"/>
+      <circle cx="505" cy="123" r="22" fill="none" stroke="#f5a623" stroke-width="0.8" opacity="0.5"/>
+      <text x="505" y="180" text-anchor="middle" fill="#3a3a3a" font-size="9">⑦ CCD</text>
+      <text x="505" y="192" text-anchor="middle" fill="#3a3a3a" font-size="9">同心圓條紋</text>
+    </svg>
+    <div class="diagram-caption">圖 7-2：Fabry–Perot 干涉儀架設示意。鈉燈經毛玻璃形成擴散光源，光在兩高反射鏡 M₁、M₂ 間多次往返後，透射光經透鏡聚焦於 CCD 形成同心圓條紋。M₂ 由螺旋測微器控制，可改變板間距 d。</div>
+  </div>
+
+  <ol class="steps">
+    <li class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <div class="step-title">調整兩鏡平行，建立同心圓條紋</div>
+        <div class="step-desc">以鈉燈加毛玻璃照明 F-P 干涉儀。觀測可用肉眼直接看屏、或用 CCD 接收後在電腦螢幕看（後者較不費眼）。</div>
+        <div class="step-detail">
+          <div class="step-detail-row"><span class="step-detail-label">觀測</span><span class="step-detail-text"><strong>肉眼：</strong>從觀察屏正面看圓條紋，方便快速調整鏡子角度。<br><strong>CCD：</strong>條紋更穩定、可放大細節、判斷「重合 vs 交錯」更準。F-P 條紋極尖銳，CCD 曝光時間要調整避免過曝或過暗。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">操作</span><span class="step-detail-text">調整可調鏡 (Adjustable Mirror) 後方的兩個微調旋鈕，慢慢改變鏡子的水平與垂直傾角，直到觀察螢幕上出現清晰的同心圓條紋。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">判斷</span><span class="step-detail-text">兩鏡越平行，條紋越尖銳對比越高。若條紋是橢圓或斜紋 → 兩鏡不夠平行；若完全沒有條紋 → 角度差太多，先把鏡子拉到大致 0° 再微調。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">為什麼</span><span class="step-detail-text">F-P 是多光束干涉，需要光在兩鏡間多次往返才能形成尖銳條紋。兩鏡不夠平行 → 光偏出去就不再往返 → 多光束變兩光束 → 對比下降。</span></div>
+        </div>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <div class="step-title">辨識「重合」與「交錯」狀態</div>
+        <div class="step-desc">緩慢轉測微器改變兩鏡距離 d，觀察條紋對比的週期變化。</div>
+        <div class="step-detail">
+          <div class="step-detail-row"><span class="step-detail-label">操作</span><span class="step-detail-text">先轉幾圈試試，讓眼睛習慣條紋對比變化的速度；同時觀察條紋有無真的因應測微器轉動而動。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">判斷</span><span class="step-detail-text">「重合」 = 兩組同心圓亮環疊在一起，看起來只有一組清晰條紋。「交錯」 = 兩組亮環錯開，亮環密度看起來變兩倍但亮度與對比下降，整體偏灰。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">為什麼</span><span class="step-detail-text">D1 與 D2 各自有一組條紋，因為波長極相近，兩組圓的半徑略有不同。隨著 d 改變，兩組條紋的相位差累積，會週期性「重合 → 錯開 → 重合」。</span></div>
+        </div>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <div class="step-title">記錄兩次「重合」之間的板距差 Δd</div>
+        <div class="step-desc">從第一次重合的位置記讀值 x₁，繼續同向慢轉，等下一次完全重合再記 x₂。</div>
+        <div class="step-detail">
+          <div class="step-detail-row"><span class="step-detail-label">操作</span><span class="step-detail-text">每次「重合」要前後微調確認那是對比最強的位置（不是中間位置）。記錄 x₁、x₂ 後 Δx = x₂ − x₁，Δd = k·Δx。建議多測 2-3 次取平均。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">判斷</span><span class="step-detail-text">「最清晰」的判斷較主觀，可同時數中間經過幾次完整的「重合 → 模糊 → 重合」週期來校驗。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">為什麼</span><span class="step-detail-text">板距改變 Δd 期間，兩波長的相位差累積一個完整週期 2π，相當於 λ₁ 與 λ₂ 的條紋階數差 1。由此可反推 Δλ。</span></div>
+          <div class="step-detail-row"><span class="step-detail-label">公式</span><span class="step-detail-text"><span class="step-formula">Δλ = λ₁λ₂ / (2Δd)</span>，理論值 0.597 nm。F-P 比 Michelson 更精準是因為條紋更尖銳，重合位置判斷誤差更小。</span></div>
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <hr class="divider">
+
+  <h3>範例數據</h3>
+
+  <h3>表五：Fabry–Perot 量測 Δλ</h3>
+  <p>理論值 Δλ = 0.597 nm。</p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>樣本</th><th>cycle</th><th>Δd (μm)</th><th>Δλ (nm)</th><th>vs 理論 0.597</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>樣本一</td><td class="num-cell">1</td><td class="num-cell">289.9</td><td class="highlight">0.618</td><td class="num-cell">+3.5%</td></tr>
+        <tr><td>樣本二</td><td class="num-cell">1</td><td class="num-cell">340.0</td><td class="highlight">0.510</td><td class="num-cell">−14.6%</td></tr>
+        <tr><td>樣本三</td><td class="num-cell">1</td><td class="num-cell">219</td><td class="highlight">0.793</td><td class="num-cell">+32.8%</td></tr>
+        <tr><td>樣本三</td><td class="num-cell">1</td><td class="num-cell">259</td><td class="highlight">0.670</td><td class="num-cell">+12.2%</td></tr>
+        <tr><td>樣本三</td><td class="num-cell">2</td><td class="num-cell">485</td><td class="highlight">0.717</td><td class="num-cell">+20.1%</td></tr>
+        <tr style="background:#fef9ec"><td><strong>樣本三平均</strong></td><td>—</td><td>—</td><td class="highlight"><strong>0.727</strong></td><td class="num-cell"><strong>+21.8%</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  TAB 5: Q&A                                            -->
+<!-- ══════════════════════════════════════════ -->
+<section id="tab-qa" class="section">
+  <h2><span class="num">04</span>問題與討論</h2>
+
+  <p style="color:var(--muted);font-size:0.93rem;margin-bottom:24px;">以下為講義要求的思考與討論題目完整解答，點擊展開。</p>
+
+  <p style="font-weight:700;margin-bottom:12px;">思考與預測</p>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      Q1：為何要將 Michelson 兩臂調整到大致相等的長度？
+      <span class="toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p><strong>原因：相干長度限制</strong></p>
+      <p>真實光源的相干長度（Coherence length）有限。He-Ne 雷射相干長度可達數十公分到數公尺，鈉燈則只有幾 mm 到 1 cm 左右（單模雷射 vs 寬譜燈源）。若兩臂路程差超過光源的相干長度，兩束光到達觀測屏時的相位關係已不再穩定，干涉條紋的對比度（Visibility）會下降甚至完全消失。</p>
+      <p><strong>等長的好處：</strong></p>
+      <ul>
+        <li>光程差趨近零 → 遠小於相干長度 → 條紋穩定清晰</li>
+        <li>兩臂幾何像差相互對稱 → 減少系統誤差</li>
+        <li>用 He-Ne 對好等長後再換鈉燈，可大幅降低看不到條紋的機率</li>
+      </ul>
+      <p><strong>實驗中的具體現象：</strong>若雷射下看得到條紋、換鈉燈卻看不見，最可能原因就是兩臂差距超過鈉燈相干長度。可先用尺粗估兩臂長度，相差控制在 5 mm 以內。</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      Q2：補償鏡的功能為何？
+      <span class="toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p><strong>原因：兩臂通過玻璃的次數不對稱</strong></p>
+      <p>分光鏡是一塊玻璃板，鍍膜面只有一面。從雷射射入後：</p>
+      <ul>
+        <li><strong>到可移動鏡那臂的光</strong>：穿透分光鏡 1 次 → 反射回來再穿透 1 次 = 穿過玻璃 2 次（但少一次穿過鍍膜層）</li>
+        <li><strong>到固定鏡那臂的光</strong>：在分光鏡鍍膜面反射 → 反射回來再反射 = 完全沒穿過玻璃</li>
+      </ul>
+      <p>結果是「到可移動鏡那臂」多穿了 2 倍玻璃厚度，引入額外光程差（玻璃折射率 ≠ 空氣折射率）。此外不同波長在玻璃中折射率不同（色散），會造成寬譜光源的條紋對比下降。</p>
+      <p><strong>補償鏡的作用：</strong>放在「沒穿過玻璃那臂」（即固定鏡那臂），是一片與分光鏡材質、厚度完全相同的玻璃。讓兩臂通過的玻璃總厚度相等（光路對稱），消除：</p>
+      <ul>
+        <li>額外光程差 → 量測的光程差才純粹來自鏡面位移或折射率改變</li>
+        <li>色散造成的條紋對比下降 → 鈉燈或白光下也能看到清晰條紋</li>
+      </ul>
+      <p><strong>結報常見錯誤：</strong>把補償鏡寫成「在分光鏡同一臂」，或寫「補償鏡也是分光的」。實際上補償鏡只是普通透明玻璃，不分光、不鍍膜。</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      Q3：建設性干涉條件為何是 (n + ½)λ 而非 nλ？
+      <span class="toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p><strong>原因：反射時的 π 相位跳躍（半波損失）</strong></p>
+      <p>光從光疏介質（折射率小）射向光密介質（折射率大）反射時，反射波相位反轉 π，等效於多出半個波長 λ/2 的光程。這是 Fresnel 反射係數的結果：</p>
+      <div class="formula-box" style="font-size:0.88rem;">
+r₁₂ = (n₁ − n₂) / (n₁ + n₂)
+若 n₂ > n₁ → r &lt; 0 → 反射波相位反轉 π
+      </div>
+      <p><strong>在 Michelson 中：</strong>兩束光的反射經歷不完全相同。其中一束在分光鏡的鍍膜面從空氣端反射（疏→密），另一束從玻璃內側反射（密→疏，不反相），兩臂之間多出一個 π 的相對相位差，等效於多出 λ/2 的光程差。</p>
+      <p><strong>修正條件：</strong>原本純幾何整數倍條件 Δ = nλ，加入這半波長修正，變成：</p>
+      <div class="formula-box" style="font-size:0.88rem;">
+建設性干涉：<span class="hl">2d cosφ = (n + ½)λ</span>
+破壞性干涉：2d cosφ = nλ
+      </div>
+      <p><strong>注意：</strong>這個 ½ 是反射時的相位效應，並非兩臂幾何路程真的多出 λ/2。實驗上我們只關心「相對」的條紋移動數，這個常數半波長並不影響量測。</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      Q4：如何確認旋轉螺旋測微器時，平移台真的有在移動？
+      <span class="toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p><strong>原因：機械空回（Backlash）</strong></p>
+      <p>螺旋測微器與平移台之間的螺紋傳動有公差。當旋轉方向改變時，螺紋需先「貼合」到另一側才會真正帶動平移台，這段「轉動了但平移台不動」的範圍稱為空回，可能達數十條條紋。</p>
+      <p><strong>判斷方法：</strong></p>
+      <ul>
+        <li>不能只看測微器刻度有沒有變，要<strong>觀察干涉條紋是否同步移動</strong>。</li>
+        <li>轉動測微器，若條紋立即連續移動 → 平移台確實在動。</li>
+        <li>若刻度改變但條紋停在原地 → 仍在空回段，這段讀值不算。</li>
+      </ul>
+      <p><strong>實驗中如何避免：</strong></p>
+      <ul>
+        <li>全程<strong>朝同一方向</strong>旋轉，絕不反轉。</li>
+        <li>校準 k 值與量波長要在同一方向、同一段刻度範圍內進行。</li>
+        <li>若不小心反轉了，要先朝原方向多轉幾條條紋確認跳出空回段，才能繼續計數。</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <p style="font-weight:700;margin-bottom:12px;">問題與討論</p>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      Q5：為何 Michelson 不容易量測鈉燈兩波長差 Δλ，而 Fabry–Perot 可以？
+      <span class="toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p><strong>核心差異：條紋的尖銳程度</strong></p>
+      <p>鈉燈 D1、D2 兩波長差僅約 0.6 nm。</p>
+      <p><strong>Michelson 是雙光束干涉</strong>，條紋強度分布為餘弦型 I ∝ (1 + cos δ)，峰值寬且平緩。兩組相近波長的條紋幾乎完全重疊，無法直接分辨。雖可觀察清晰↔模糊週期估算 Δλ，但判讀「最清晰」位置主觀性大、誤差大。</p>
+      <p><strong>Fabry-Perot 是多光束干涉</strong>，透射條紋為 Airy 函數型，峰值極尖銳。Finesse 公式：</p>
+      <div class="formula-box" style="font-size:0.88rem;">
+ℱ = π√R / (1−R) （R 為鏡面反射率）
+
+例：R = 0.85 → ℱ ≈ 19
+例：R = 0.95 → ℱ ≈ 61
+      </div>
+      <p>Finesse 越大，條紋越尖、能分辨的最小波長差越小。Fabry-Perot 因為光在兩鏡間多次往返，等效「無限多束光干涉」，條紋極尖；Michelson 只有兩束光，等效 Finesse ≈ 2，分辨力差很多。</p>
+      <p><strong>實驗上的差異：</strong>F-P 量出來的 Δλ 通常更接近理論值 0.597 nm，誤差約 3–20%；Michelson 量 Δλ 誤差可達 15% 以上（看「最清晰」判讀有多準）。</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      Q6：為何 Fabry–Perot 干涉儀無法直接量測鈉燈的絕對波長 λ？
+      <span class="toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p><strong>原因：階次 m 與板距 d 都無法直接得知</strong></p>
+      <p>F-P 的條紋共振條件：</p>
+      <div class="formula-box" style="font-size:0.88rem;">
+2d cosθ = mλ
+      </div>
+      <p>單看一組條紋，要算出 λ 必須同時知道：</p>
+      <ul>
+        <li>整數階次 <strong>m</strong>：實驗中通常很大（可達數萬），無法直接從條紋計數得到絕對值。</li>
+        <li>精確板距 <strong>d</strong>：F-P 鏡距校準誤差通常在 μm 量級，乘上大 m 後波長誤差會放大。</li>
+        <li>入射角 <strong>θ</strong>：每條同心圓亮環對應不同 θ，但 θ 也無法直接量。</li>
+      </ul>
+      <p>三個未知量無法只靠條紋位置求出 λ。</p>
+      <p><strong>對比 Michelson：</strong>每移動鏡面 λ/2，就有一條條紋通過。<strong>條紋數 N 直接對應到光程差 Nλ</strong>，不需要知道 m 的絕對值，只需要知道相對變化。因此 Michelson 可量絕對波長，F-P 只能量「兩組條紋的相對差值 Δλ」（這時 m 的不確定性可以消去）。</p>
+      <p><strong>實驗中為何 m 難測：</strong>F-P 鏡距 d 通常幾 cm，m = 2d/λ 對 λ = 589 nm 大約是 10⁵ 階。要量到 m 必須讓 d 變到很小（例如 0），再從 d=0 開始計數，但機械上做不到。</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      Q7：導出 Δλ = λ₁λ₂ / (2Δd)
+      <span class="toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p>從「兩組條紋重合後，Δd 內 λ₁ 比 λ₂ 多走一個完整週期」出發：</p>
+      <div class="formula-box" style="margin:12px 0;font-size:0.9rem;">
+2Δd/λ₁ − 2Δd/λ₂ = 1
+
+⟹ 2Δd · (λ₂ − λ₁)/(λ₁λ₂) = −1
+
+取絕對值（定義 Δλ = λ₁ − λ₂ > 0）：
+
+<span class="hl">Δλ = λ₁λ₂ / (2Δd)</span>
+      </div>
+      <p style="font-size:0.9rem;color:#555;">物理意義：Δd 越小代表 Δλ 越大（兩波長差越大，條紋重新對齊所需的板距差越小）。</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      Q8：導出 n₀ = 1 + λΔN / [2l(1 − P/P₀)]
+      <span class="toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p>由理想氣體近似，折射率與壓力線性：</p>
+      <div class="formula-box" style="margin:12px 0;font-size:0.9rem;">
+n(P) = 1 + (n₀ − 1) · P/P₀
+
+⟹ Δn = n₀ − n(P) = (n₀ − 1)(1 − P/P₀)
+
+光在腔中往返，光程差改變：
+ΔL = 2l · Δn
+
+對應條紋移動數 ΔN：
+ΔN = ΔL/λ  ⟹  λΔN = 2l(n₀ − 1)(1 − P/P₀)
+
+解出 n₀：
+<span class="hl">n₀ = 1 + λΔN / [2l(1 − P/P₀)]</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ── TABS ──
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'michelson') initCharts();
+}
+
+// ── QA ──
+function toggleQA(el) {
+  el.classList.toggle('open');
+  const a = el.nextElementSibling;
+  a.classList.toggle('visible');
+}
+
+// ── CHARTS ──
+let chartsInit = false;
+function initCharts() {
+  if (chartsInit) return;
+  chartsInit = true;
+
+  // Chart: d vs N
+  const Ns = [10, 20, 30, 40, 50, 60, 70, 80];
+  const lamNa = 589.3e-6; // mm
+  const ds_ideal = Ns.map(n => n * lamNa / 2);
+  const ds_noise = ds_ideal.map(d => d + (Math.random() - 0.5) * 0.0004);
+  new Chart(document.getElementById('chartLinear'), {
+    type: 'scatter',
+    data: {
+      datasets: [
+        { label: '量測點', data: Ns.map((n, i) => ({ x: n, y: ds_noise[i] })), backgroundColor: '#b5451b', pointRadius: 6 },
+        { label: '理想線性 λ = 589.3 nm', data: [{ x: 0, y: 0 }, { x: 80, y: 80 * lamNa / 2 }], type: 'line', borderColor: '#c8922a', borderDash: [5, 4], pointRadius: 0, fill: false, borderWidth: 1.5 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        x: { title: { display: true, text: '條紋數 N' } },
+        y: { title: { display: true, text: '鏡面位移 d (mm)' } }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

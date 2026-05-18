@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>實驗 10｜旋光性 Optical Activity</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --bg-tint: #f5f3ee;
+    --paper: #ffffff;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --ink-mute: #6b6b6b;
+    --line: #e5e2db;
+    --line-soft: #efece5;
+    --accent: #b8860b;
+    --accent-soft: #d4a44e;
+    --accent-bg: #fdf6e3;
+    --warn-bg: #fff7e6;
+    --warn-border: #d97706;
+    --warn-text: #92400e;
+    --good-bg: #ecf6ee;
+    --good-border: #4a7c4f;
+    --good-text: #2d5a32;
+    --err-bg: #fdecec;
+    --err-border: #b91c1c;
+    --err-text: #7f1d1d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(ellipse at top, #ffffff 0%, var(--bg) 40%, var(--bg-tint) 100%);
+    color: var(--ink);
+    font-family: 'Noto Serif TC', 'Source Han Serif TC', serif;
+    min-height: 100vh; line-height: 1.7;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.35 0 0 0 0 0.25 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.6;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 1.8rem 6rem; }
+
+  .hero { text-align: center; padding: 5rem 0 3rem; margin-bottom: 3rem; position: relative; }
+  .hero::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 1px; background: var(--ink); }
+  .exp-num { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.35em; color: var(--accent); text-transform: uppercase; margin-bottom: 1.5rem; font-weight: 500; }
+  .hero h1 { font-family: 'Playfair Display', 'Noto Serif TC', serif; font-size: clamp(2.6rem, 5.5vw, 4.2rem); font-weight: 700; line-height: 1.1; color: var(--ink); margin-bottom: 0.6rem; letter-spacing: -0.02em; }
+  .hero h1 em { font-style: italic; font-size: 0.55em; font-weight: 400; color: var(--accent); display: block; margin-top: 0.3rem; letter-spacing: 0; }
+  .hero-sub { font-size: 0.95rem; color: var(--ink-mute); font-family: 'JetBrains Mono', monospace; margin-top: 1.5rem; letter-spacing: 0.05em; }
+
+  .tabs { display: flex; gap: 0; margin-bottom: 3rem; border-bottom: 1px solid var(--line); flex-wrap: wrap; overflow-x: auto; }
+  .tab-btn { background: none; border: none; cursor: pointer; font-family: 'Noto Serif TC', serif; font-size: 0.92rem; color: var(--ink-mute); padding: 1rem 1.5rem; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; margin-bottom: -1px; }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+
+  .section { display: none; animation: fadeIn 0.4s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 2rem 2.2rem; margin-bottom: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+  .card-title { font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.6rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line-soft); font-family: 'Playfair Display', 'Noto Serif TC', serif; }
+  .card-title .num { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--accent); background: var(--accent-bg); padding: 0.15rem 0.5rem; border-radius: 2px; letter-spacing: 0.1em; font-weight: 600; }
+  p, li { line-height: 1.85; color: var(--ink-soft); font-size: 0.96rem; }
+  ul { padding-left: 1.4rem; }
+  li { margin-bottom: 0.5rem; }
+  strong { color: var(--ink); font-weight: 700; }
+
+  .formula-box { background: var(--bg-tint); border-left: 3px solid var(--accent); border-radius: 2px; padding: 1.2rem 1.5rem; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 1.05rem; color: var(--ink); text-align: center; letter-spacing: 0.02em; }
+  .formula-box .label { font-size: 0.78rem; color: var(--ink-mute); margin-top: 0.6rem; font-family: 'Noto Serif TC', serif; letter-spacing: 0; }
+
+  .apparatus { background: var(--bg-tint); border: 1px solid var(--line); border-radius: 4px; padding: 1.5rem; overflow-x: auto; margin: 1.2rem 0; }
+  .apparatus-svg { display: block; margin: 0 auto; min-width: 620px; }
+
+  .step-item { display: flex; gap: 1.2rem; margin-bottom: 1.8rem; padding-bottom: 1.5rem; border-bottom: 1px dashed var(--line-soft); }
+  .step-item:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+  .step-num { min-width: 38px; height: 38px; background: var(--paper); color: var(--accent); border: 1.5px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .step-body { flex: 1; }
+  .step-title { font-weight: 700; color: var(--ink); margin-bottom: 0.5rem; font-size: 1rem; }
+  .step-desc { color: var(--ink-soft); font-size: 0.93rem; line-height: 1.75; }
+
+  .callout { padding: 0.7rem 1rem; border-radius: 3px; margin-top: 0.7rem; font-size: 0.88rem; line-height: 1.6; border-left: 3px solid; }
+  .callout-warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
+  .callout-tip { background: var(--good-bg); border-color: var(--good-border); color: var(--good-text); }
+  .callout-pitfall { background: var(--err-bg); border-color: var(--err-border); color: var(--err-text); }
+
+  .phase-label { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; background: var(--ink); color: white; padding: 0.25rem 0.7rem; border-radius: 2px; margin-bottom: 1rem; letter-spacing: 0.08em; font-weight: 500; }
+
+  table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; margin: 0.8rem 0; background: var(--paper); }
+  thead { background: var(--bg-tint); }
+  th { padding: 0.85rem 0.9rem; text-align: center; color: var(--ink); font-weight: 700; border-bottom: 2px solid var(--ink); white-space: nowrap; font-size: 0.83rem; letter-spacing: 0.02em; }
+  td { padding: 0.7rem 0.9rem; text-align: center; border-bottom: 1px solid var(--line-soft); color: var(--ink-soft); }
+  tr:hover td { background: rgba(184, 134, 11, 0.04); }
+  .editable { background: rgba(184, 134, 11, 0.06); border: 1px dashed var(--accent-soft); border-radius: 3px; padding: 0.1rem 0.3rem; cursor: text; outline: none; color: var(--accent); min-width: 50px; display: inline-block; text-align: center; font-weight: 600; }
+  .editable:focus { background: rgba(184, 134, 11, 0.12); border-style: solid; }
+
+  .chart-wrap { position: relative; height: 380px; margin: 1.5rem 0; background: var(--paper); padding: 1rem; border: 1px solid var(--line); border-radius: 4px; }
+
+  .sim-controls { display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: center; margin: 1rem 0; padding: 1.2rem 1.5rem; background: var(--bg-tint); border: 1px solid var(--line); border-radius: 4px; }
+  .ctrl-group { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; min-width: 180px; }
+  .ctrl-group label { font-size: 0.74rem; color: var(--ink-mute); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  select { background: var(--paper); color: var(--ink); border: 1px solid var(--line); padding: 0.5rem 0.7rem; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; cursor: pointer; }
+  .ctrl-val { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; color: var(--accent); font-weight: 700; }
+
+  .qa-item { border: 1px solid var(--line); border-radius: 3px; margin-bottom: 0.8rem; overflow: hidden; background: var(--paper); }
+  .qa-q { padding: 1rem 1.3rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.95rem; color: var(--ink); transition: background 0.2s; }
+  .qa-q:hover { background: var(--bg-tint); }
+  .qa-q .toggle { font-size: 1rem; color: var(--accent); transition: transform 0.3s; font-family: 'JetBrains Mono', monospace; }
+  .qa-q.open .toggle { transform: rotate(180deg); }
+  .qa-a { display: none; padding: 1rem 1.3rem 1.3rem; background: var(--bg-tint); font-size: 0.92rem; color: var(--ink-soft); line-height: 1.85; border-top: 1px solid var(--line-soft); }
+  .qa-a.open { display: block; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media(max-width: 720px) { .two-col { grid-template-columns: 1fr; } .card { padding: 1.5rem 1.4rem; } .wrap { padding: 0 1.2rem 4rem; } }
+
+  .highlight { color: var(--accent); font-weight: 700; }
+
+  .pol-viz { display: flex; align-items: center; justify-content: center; margin: 1.5rem 0; flex-wrap: wrap; gap: 0.3rem; }
+  .pol-box { text-align: center; width: 86px; }
+  .pol-box svg { display: block; margin: 0 auto; }
+  .pol-box .pol-label { font-size: 0.7rem; color: var(--ink-mute); margin-top: 0.4rem; font-family: 'JetBrains Mono', monospace; line-height: 1.3; }
+  .pol-arrow { color: var(--ink-mute); font-size: 1.3rem; padding: 0 0.2rem; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="exp-num">NTHU Physics · Optics Lab · Experiment 10</div>
+    <h1>旋光性<em>Optical Activity</em></h1>
+    <div class="hero-sub">蔗糖水溶液偏振旋轉角的測量　·　濃度與波長依賴性</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('theory',this)">① 實驗原理</button>
+    <button class="tab-btn" onclick="showTab('setup',this)">② 光路架構</button>
+    <button class="tab-btn" onclick="showTab('steps',this)">③ 實驗步驟</button>
+    <button class="tab-btn" onclick="showTab('data',this)">④ 數據記錄</button>
+    <button class="tab-btn" onclick="showTab('qa',this)">⑤ 問題討論</button>
+  </div>
+
+  <!-- ① THEORY -->
+  <div id="sec-theory" class="section active">
+
+    <div class="card">
+      <div class="card-title"><span class="num">01</span><span>什麼是旋光性</span></div>
+      <p>旋光性（Optical Activity）是指某些物質能使線性偏振光的<span class="highlight">偏振平面發生旋轉</span>的性質。其根本來源是分子結構的<strong>手性</strong>（chirality）——分子與其鏡像無法藉由平移或旋轉互相重疊，稱為<strong>鏡像異構物</strong>（enantiomer）。</p>
+      <p style="margin-top:0.8rem;">本實驗使用<strong>蔗糖水溶液</strong>，蔗糖在自然界中只存在單一鏡像異構物，因此線偏振光通過後偏振軸會朝固定方向旋轉。蔗糖屬於<strong>右旋分子</strong>（dextrorotatory），<strong>面對光源觀察時為順時針旋轉</strong>。</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title"><span class="num">02</span><span>比旋光度公式</span></div>
+        <p>偏振軸旋轉角 β 定義為：</p>
+        <div class="formula-box">
+          β = θ − θ₀
+          <div class="label">θ₀ 為純水基準角，θ 為加糖後 analyzer 角度</div>
+        </div>
+        <p>旋轉角與<span class="highlight">濃度 C</span> 及<span class="highlight">光程長 L</span> 的關係：</p>
+        <div class="formula-box">
+          β = [α]<sup>T</sup><sub>λ</sub> · L · C
+          <div class="label">[α]：比旋光度（隨波長、溫度而變）　L：光程　C：質量體積濃度</div>
+        </div>
+        <p style="font-size:0.88rem;">在固定 L 與 λ 下，β 與 C 理論上呈<strong>線性關係</strong>。</p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="num">03</span><span>旋光色散與必歐定律</span></div>
+        <p>旋光角隨波長改變的現象稱為<strong>旋光色散</strong>（ORD）。對可見光波段，必歐定律給出：</p>
+        <div class="formula-box">
+          β ∝ 1/λ²
+          <div class="label">短波長（藍光）旋轉角 &gt; 長波長（紅光）</div>
+        </div>
+        <p>因此若以 β 對 1/λ² 作圖，理論上應為通過原點的直線，可作為驗證 Biot 定律的方法。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="num">04</span><span>物理機制：圓雙折射</span></div>
+      <p>線性偏振光可分解為<strong>左旋圓偏振</strong>（LCP）與<strong>右旋圓偏振</strong>（RCP）兩個分量。手性介質對 LCP 與 RCP 的折射率不同（n<sub>L</sub> ≠ n<sub>R</sub>，稱為<span class="highlight">圓雙折射</span>），導致兩分量在介質中傳播速度不同，累積出相位差後重新疊加，巨觀上就表現為偏振方向旋轉了一個角度。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="num">05</span><span>講義備註</span></div>
+      <ul>
+        <li><strong>備註 1</strong>：不一定需要光功率計——直接靠肉眼判斷 analyzer 旋轉到消光位置即可。</li>
+        <li><strong>備註 2</strong>：旋光程度與<span class="highlight">單位體積蔗糖分子數</span>有關，要留意濃度的測量方式。</li>
+        <li><strong>備註 3</strong>：實驗一開始將水加到 <strong>2 cm 深</strong>，固定光程長以便比較不同糖量的數據。</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ② SETUP -->
+  <div id="sec-setup" class="section">
+
+    <div class="card">
+      <div class="card-title"><span class="num">A</span><span>實驗架構圖</span></div>
+      <div class="apparatus">
+        <svg class="apparatus-svg" width="720" height="200" viewBox="0 0 720 200">
+          <defs>
+            <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#6b6b6b"/>
+            </marker>
+          </defs>
+          <line x1="70" y1="100" x2="650" y2="100" stroke="#9a9a9a" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrowhead)"/>
+          <rect x="10" y="70" width="60" height="60" rx="3" fill="#fefcf5" stroke="#3949ab" stroke-width="1.5"/>
+          <text x="40" y="93" text-anchor="middle" fill="#3949ab" font-size="9" font-family="JetBrains Mono">White</text>
+          <text x="40" y="107" text-anchor="middle" fill="#3949ab" font-size="9" font-family="JetBrains Mono">Light</text>
+          <text x="40" y="121" text-anchor="middle" fill="#3949ab" font-size="9" font-family="JetBrains Mono">Source</text>
+          <text x="40" y="148" text-anchor="middle" fill="#6b6b6b" font-size="8">Tungsten</text>
+          <rect x="92" y="75" width="22" height="50" rx="2" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="103" y="143" text-anchor="middle" fill="#7c3aed" font-size="7.5" font-family="JetBrains Mono">Narrow</text>
+          <text x="103" y="153" text-anchor="middle" fill="#7c3aed" font-size="7.5" font-family="JetBrains Mono">Filter</text>
+          <ellipse cx="138" cy="100" rx="6" ry="22" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+          <text x="138" y="143" text-anchor="middle" fill="#b45309" font-size="7.5" font-family="JetBrains Mono">Lens</text>
+          <rect x="170" y="72" width="18" height="56" rx="2" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+          <line x1="179" y1="82" x2="179" y2="118" stroke="#1d4ed8" stroke-width="2"/>
+          <text x="179" y="148" text-anchor="middle" fill="#1d4ed8" font-size="8" font-family="JetBrains Mono">Polarizer</text>
+          <text x="205" y="92" fill="#1d4ed8" font-size="11">↕</text>
+          <rect x="240" y="60" width="220" height="80" rx="3" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5"/>
+          <text x="350" y="93" text-anchor="middle" fill="#0369a1" font-size="10" font-weight="bold">蔗糖水溶液</text>
+          <text x="350" y="109" text-anchor="middle" fill="#0369a1" font-size="8.5">Sucrose Solution</text>
+          <text x="350" y="125" text-anchor="middle" fill="#6b6b6b" font-size="8">0 / 4 / 8 / 12 / 16 包</text>
+          <line x1="240" y1="128" x2="460" y2="128" stroke="#0369a1" stroke-width="1" stroke-dasharray="3,3"/>
+          <text x="475" y="132" fill="#0369a1" font-size="7.5">2 cm</text>
+          <path d="M 330 97 A 20 20 0 0 1 370 97" stroke="#b45309" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+          <text x="350" y="82" text-anchor="middle" fill="#b45309" font-size="8">β 旋轉</text>
+          <rect x="510" y="72" width="18" height="56" rx="2" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+          <line x1="519" y1="82" x2="519" y2="118" stroke="#15803d" stroke-width="2" transform="rotate(25, 519, 100)"/>
+          <text x="519" y="148" text-anchor="middle" fill="#15803d" font-size="8" font-family="JetBrains Mono">Analyzer</text>
+          <text x="519" y="158" text-anchor="middle" fill="#15803d" font-size="7.5" font-family="JetBrains Mono">(可旋轉)</text>
+          <rect x="600" y="76" width="50" height="48" rx="3" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+          <circle cx="625" cy="100" r="14" fill="none" stroke="#b45309" stroke-width="1.5"/>
+          <text x="625" y="100" text-anchor="middle" fill="#b45309" font-size="11" dominant-baseline="middle">👁</text>
+          <text x="625" y="140" text-anchor="middle" fill="#b45309" font-size="8">肉眼觀察</text>
+          <text x="625" y="150" text-anchor="middle" fill="#6b6b6b" font-size="7.5">(面對光源)</text>
+        </svg>
+      </div>
+      <p style="font-size:0.86rem; color:var(--ink-mute); text-align:center; margin-top:0.5rem;">※ 觀察者位於 Analyzer 後方，面對光源觀察消光位置</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title"><span class="num">B</span><span>儀器清單（依講義）</span></div>
+        <ul>
+          <li>白光光源（Tungsten lamp）×1</li>
+          <li>窄頻濾波片（5 種波長）×5</li>
+          <li>偏振片（Polarizer）×1</li>
+          <li>偏振片（Analyzer，可讀角度）×1</li>
+          <li>糖水容器 ×1</li>
+          <li>砂糖數包</li>
+          <li>平凸透鏡 ×1</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="num">C</span><span>偏振狀態示意</span></div>
+        <div class="pol-viz" id="polViz"></div>
+        <div class="sim-controls" style="flex-direction:column;">
+          <div class="ctrl-group">
+            <label>旋轉角 β (°)</label>
+            <input type="range" id="betaSlider" min="0" max="75" value="22" oninput="updatePolViz()">
+            <div class="ctrl-val" id="betaVal">22°</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ③ STEPS -->
+  <div id="sec-steps" class="section">
+
+    <div class="card">
+      <div class="phase-label">PHASE A — 建立光路與基準</div>
+
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">注水至 2 cm 深</div>
+          <div class="step-desc">在容器中加入純水，使液面高度達到 2 cm。實驗過程中不可再改變水深。</div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">組建光路</div>
+          <div class="step-desc">依序擺放：白光源 → 窄頻濾波片 → 平凸透鏡 → Polarizer → 糖水容器 → Analyzer → 觀察端。確保光束與容器透光面垂直入射，並通過容器中央。</div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">純水狀態下找基準角 θ₀</div>
+          <div class="step-desc">先選定一片濾波片。容器內為純水，旋轉 Analyzer 直到肉眼觀察到<strong>消光位置（最暗）</strong>，記錄此角度為 θ₀。</div>
+          <div class="callout callout-tip">✓ 消光位置比最亮位置更精確：因為光強對角度的變化在消光附近最敏感。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="phase-label">PHASE B — 改變濃度量測</div>
+
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">依序加入 4、8、12、16 包糖</div>
+          <div class="step-desc">每加一批糖後充分攪拌至完全溶解，待液面穩定後再量測。</div>
+          <div class="callout callout-pitfall">✗ 攪拌不均或砂糖未完全溶解，會使光路上的濃度不均勻，β 偏小且重現性差。</div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-title">量測每個濃度的 Analyzer 角度 θ</div>
+          <div class="step-desc">對每種濃度，旋轉 Analyzer 找回最暗位置，記錄角度 θ。計算 <strong>β = θ − θ₀</strong>，並記錄旋轉方向（<strong>面對光源觀察</strong>，順時針或逆時針）。</div>
+          <div class="callout callout-tip">✓ 蔗糖為右旋，面對光源觀察時 Analyzer 需<strong>順時針</strong>旋轉才能再次消光，θ 應比 θ₀ 大。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="phase-label">PHASE C — 改變波長量測</div>
+
+      <div class="step-item">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <div class="step-title">每換一片濾波片重新校準</div>
+          <div class="step-desc">每次更換濾波片後，<strong>重新以純水量測該波長下的 θ₀</strong>，再進行該波長下的各濃度量測。</div>
+          <div class="callout callout-pitfall">✗ 不可只校一次 θ₀ 就用於所有波長。</div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">7</div>
+        <div class="step-body">
+          <div class="step-title">完成 5×5 數據矩陣</div>
+          <div class="step-desc">對每一種濃度（5 種）、每一種波長（5 種）量測一次 θ，整理成「波長 × 濃度」二維表格，每格記錄 β = θ − θ₀。</div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">8</div>
+        <div class="step-body">
+          <div class="step-title">作圖與擬合</div>
+          <div class="step-desc">繪製：① <strong>β vs. 濃度</strong>（5 條波長線）驗證線性比例；② <strong>β vs. 1/λ²</strong>（不同濃度）驗證必歐定律。</div>
+          <div class="callout callout-tip">✓ β vs. 1/λ² 比 β vs. λ 更好——前者理論上是直線。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ④ DATA -->
+  <div id="sec-data" class="section">
+
+    <div class="card">
+      <div class="card-title"><span class="num">📝</span><span>數據記錄表</span></div>
+      <p style="font-size:0.9rem;margin-bottom:1rem;">點選金色格輸入數值。記得每種波長都要重新測 θ₀。</p>
+      <div style="overflow-x:auto;">
+      <table id="studentTable">
+        <thead>
+          <tr>
+            <th>波長 (nm)</th>
+            <th>θ₀ 純水</th>
+            <th>θ (4包)</th>
+            <th>θ (8包)</th>
+            <th>θ (12包)</th>
+            <th>θ (16包)</th>
+            <th>方向</th>
+          </tr>
+        </thead>
+        <tbody id="studentTbody"></tbody>
+      </table>
+      </div>
+      <div class="callout callout-warn" style="margin-top:1rem;">
+        ⚠ 旋轉方向：<strong>面對光源觀察</strong>（站在 Analyzer 後方迎光看），記錄 Analyzer 需朝順時針或逆時針旋轉才能達到消光。蔗糖為右旋，預期方向為順時針。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="num">📊</span><span>數據繪圖區</span></div>
+      <p style="font-size:0.9rem;margin-bottom:1rem;">填入 β 值（θ − θ₀ 的差值）後按「繪製圖表」，會同時產生兩張圖。</p>
+
+      <div class="callout callout-warn" style="margin-bottom:1.2rem;">
+        ⚠ <strong>關於「載入範例數據」按鈕</strong>：範例數據<strong>僅供你預覽圖表大致長相</strong>，幫助你了解兩張圖的線性趨勢與斜率比例。<strong>實際報告務必使用自己量測的數據</strong>，不可直接套用範例值。
+      </div>
+
+      <div style="overflow-x:auto;">
+      <table id="chartTable">
+        <thead>
+          <tr>
+            <th>波長 (nm)</th>
+            <th>β (4包)</th>
+            <th>β (8包)</th>
+            <th>β (12包)</th>
+            <th>β (16包)</th>
+          </tr>
+        </thead>
+        <tbody id="chartTbody"></tbody>
+      </table>
+      </div>
+
+      <div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1rem;">
+        <button onclick="drawCharts()" style="background:var(--accent);color:white;border:none;padding:0.6rem 1.4rem;border-radius:3px;font-family:'Noto Serif TC',serif;font-size:0.9rem;font-weight:700;cursor:pointer;">繪製圖表</button>
+        <button onclick="loadExampleData()" style="background:var(--paper);color:var(--ink-soft);border:1px solid var(--line);padding:0.6rem 1.4rem;border-radius:3px;font-family:'Noto Serif TC',serif;font-size:0.9rem;cursor:pointer;">載入範例數據（僅供參考）</button>
+        <button onclick="clearChartData()" style="background:var(--paper);color:var(--ink-mute);border:1px solid var(--line);padding:0.6rem 1.4rem;border-radius:3px;font-family:'Noto Serif TC',serif;font-size:0.9rem;cursor:pointer;">清除</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="num">📈</span><span>圖一：β vs. 包糖數</span></div>
+      <p style="font-size:0.88rem;color:var(--ink-mute);margin-bottom:0.5rem;">理論預期：每條波長線都應通過原點且呈線性，斜率代表該波長下的旋光強度。</p>
+      <div class="chart-wrap">
+        <canvas id="chart1"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="num">📉</span><span>圖二：β vs. 1/λ²（驗證必歐定律）</span></div>
+      <p style="font-size:0.88rem;color:var(--ink-mute);margin-bottom:0.5rem;">理論預期：必歐定律 β ∝ 1/λ²，因此在 1/λ² 橫軸下應呈現直線。</p>
+      <div class="chart-wrap">
+        <canvas id="chart2"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ⑤ Q&A -->
+  <div id="sec-qa" class="section">
+
+    <div class="card">
+      <div class="card-title"><span class="num">💡</span><span>思考與預測題</span></div>
+
+      <div class="qa-item">
+        <div class="qa-q" onclick="toggleQA(this)">
+          Q1. 如何讓光筆直穿越糖水溶液？
+          <span class="toggle">▼</span>
+        </div>
+        <div class="qa-a">
+          要讓光束筆直穿越溶液不發生偏折，關鍵在於避免光在介面處產生折射。具體做法：<br><br>
+          ① <strong>使用平整介面的容器</strong>：盛裝糖水的容器其前後透光面必須平整且平行。若使用圓柱形燒杯，曲面會產生透鏡般的聚焦或散焦效應。<br>
+          ② <strong>光路準直與垂直入射</strong>：用平凸透鏡將鎢絲燈發出的發散光準直成平行光束，並調整容器擺放角度，確保平行光束與容器透光面完全垂直。
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q" onclick="toggleQA(this)">
+          Q2. 如何不用光偵測器與功率計也能測量偏振軸的旋轉？
+          <span class="toggle">▼</span>
+        </div>
+        <div class="qa-a">
+          利用人眼對消光點的高靈敏度，透過「尋找消光位置」的視覺測量法：<br><br>
+          ① <strong>校基準</strong>：純水狀態下，旋轉 Analyzer 直到視野變得最暗（消光），記錄此時角度 θ₀。此時 Polarizer 與 Analyzer 偏振軸正交。<br>
+          ② <strong>量測</strong>：放入糖水後，偏振面被旋轉，原本消光位置變亮。再緩慢旋轉 Analyzer 直到再次達到消光，記錄新角度 θ。<br>
+          ③ <strong>計算</strong>：β = θ − θ₀ 即為糖水造成的旋轉角。<br><br>
+          這個方法精準的原因：消光位置附近，光強對角度變化最敏感（梯度最大），比尋找「最亮點」（梯度為 0）精確得多。
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q" onclick="toggleQA(this)">
+          Q3. 該如何測量蔗糖水溶液的濃度？
+          <span class="toggle">▼</span>
+        </div>
+        <div class="qa-a">
+          核心是測量<strong>質量體積濃度 C = m / V</strong>：<br><br>
+          ① <strong>標準法</strong>：用電子天平精秤蔗糖質量 m；待完全溶解後，用量筒測得溶液實際總體積 V；C = m/V。<br>
+          ② <strong>容器幾何法（較粗略）</strong>：用尺量容器內部長、寬與液深，V = 長 × 寬 × 高；糖質量以包標示重量估計。<br>
+          ③ <strong>儀器法（最精確）</strong>：使用手持折射儀（糖度計）或比重瓶測密度，再對照濃度–密度標準表換算。<br><br>
+          注意：不可單純用「包數」表示濃度，因為每包糖質量會有公差。
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q" onclick="toggleQA(this)">
+          Q4. 加入蔗糖後水溶液體積會不會改變？對數據有沒有影響？
+          <span class="toggle">▼</span>
+        </div>
+        <div class="qa-a">
+          <strong>會改變，且對數據有影響。</strong><br><br>
+          蔗糖溶於水時，分子部分填入水分子間的空隙，溶液實際體積會大於原本純水體積（液面上升），但通常小於「水體積 + 固態糖體積」的總和。<br><br>
+          對數據的影響：<br>
+          • 若用「初始水體積」當分母計算 C，會<strong>高估真實濃度</strong>，使旋光角對濃度的擬合斜率偏小。<br>
+          • 光程長 L 的影響：若光束水平穿過容器（L 由容器長度決定），液面上升不會改變 L；若光束從液面上方垂直入射，則液面上升會直接改變 L。<br><br>
+          解決方法：每加一批糖後，重新測量溶液實際總體積。
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="num">📝</span><span>實驗後問題與討論</span></div>
+
+      <div class="qa-item">
+        <div class="qa-q" onclick="toggleQA(this)">
+          Q5. 旋光性實驗中，為什麼一開始水要加 2 cm 深？水深一點淺一點不行嗎？
+          <span class="toggle">▼</span>
+        </div>
+        <div class="qa-a">
+          一開始將水加到 2 cm 深，主要是為了<strong>固定光在糖水中通過的路徑長度</strong>。<br><br>
+          因為旋光角除了和濃度有關，也和光在溶液中經過的長度有關，所以若每次水深不同，量到的旋光角就不容易直接比較。水深太淺可能使光穿過的樣品不足，旋轉角較小、不易觀察；水深太深則可能增加吸收、散射或調整上的困難。<br><br>
+          因此實驗先固定為 2 cm，讓各組數據在相同條件下比較。
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q" onclick="toggleQA(this)">
+          Q6. 為什麼線性偏振光進入有特定旋光性的物質後，偏振軸會旋轉？
+          <span class="toggle">▼</span>
+        </div>
+        <div class="qa-a">
+          線性偏振光可以看成左旋圓偏振光與右旋圓偏振光的疊加。<br><br>
+          當光進入具有旋光性的物質時，這兩個圓偏振分量在介質中的傳播速度不同（折射率不同），因此在穿過物質後會產生相位差。這個相位差會改變兩道圓偏振光疊加後的結果，使原本線性偏振光的偏振方向發生旋轉。
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q" onclick="toggleQA(this)">
+          Q7. 糖水濃度與偏振軸旋轉的角度有什麼關係？
+          <span class="toggle">▼</span>
+        </div>
+        <div class="qa-a">
+          兩者呈<strong>線性正比關係</strong>：β = [α] · L · C<br><br>
+          糖水濃度越高，單位體積內的蔗糖分子越多，光與旋光性分子的交互作用也越強，因此偏振軸的旋轉角度通常會越大。在其他條件固定時，旋光角通常和濃度近似成正比。
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q" onclick="toggleQA(this)">
+          Q8. 光源波長與偏振軸旋轉的角度有什麼關係？
+          <span class="toggle">▼</span>
+        </div>
+        <div class="qa-a">
+          偏振軸旋轉角度會隨光源波長而改變，通常<strong>短波長的光旋轉角較大</strong>，長波長的光旋轉角較小。也就是說，藍光的旋光效果通常比紅光明顯。<br><br>
+          根據必歐定律，可見光範圍內 β ∝ 1/λ²。這是因為旋光性具有色散特性，不同波長的光在旋光性介質中折射率不同，造成不同程度的偏振旋轉。
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'data') { setTimeout(drawCharts, 50); }
+}
+
+const wavelengths = [
+  {nm:450, color:'#3949ab', name:'藍'},
+  {nm:500, color:'#0369a1', name:'綠藍'},
+  {nm:550, color:'#15803d', name:'綠'},
+  {nm:600, color:'#b45309', name:'橘'},
+  {nm:650, color:'#b91c1c', name:'紅'},
+];
+
+// Student data table
+const stb = document.getElementById('studentTbody');
+wavelengths.forEach(w => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${w.nm} <span style="color:${w.color}">●</span></td>
+    <td><span class="editable" contenteditable></span></td>
+    <td><span class="editable" contenteditable></span></td>
+    <td><span class="editable" contenteditable></span></td>
+    <td><span class="editable" contenteditable></span></td>
+    <td><span class="editable" contenteditable></span></td>
+    <td><span class="editable" contenteditable>順時針</span></td>`;
+  stb.appendChild(tr);
+});
+
+// Chart input table (for β values)
+const ctb = document.getElementById('chartTbody');
+wavelengths.forEach((w, i) => {
+  const tr = document.createElement('tr');
+  tr.setAttribute('data-wi', i);
+  tr.innerHTML = `<td>${w.nm} <span style="color:${w.color}">●</span></td>
+    <td><span class="editable beta-cell" contenteditable data-pkt="4"></span></td>
+    <td><span class="editable beta-cell" contenteditable data-pkt="8"></span></td>
+    <td><span class="editable beta-cell" contenteditable data-pkt="12"></span></td>
+    <td><span class="editable beta-cell" contenteditable data-pkt="16"></span></td>`;
+  ctb.appendChild(tr);
+});
+
+function polSVG(angleDeg, color, label, sub) {
+  const rad = angleDeg * Math.PI / 180;
+  const cx = 42, cy = 42, r = 28;
+  const dx = Math.cos(rad) * r, dy = Math.sin(rad) * r;
+  return `<div class="pol-box">
+    <svg width="84" height="84" viewBox="0 0 84 84">
+      <circle cx="${cx}" cy="${cy}" r="30" fill="#fefcf5" stroke="${color}" stroke-width="1.5"/>
+      <line x1="${cx-dx}" y1="${cy-dy}" x2="${cx+dx}" y2="${cy+dy}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="${cx}" cy="${cy}" r="2.5" fill="${color}"/>
+    </svg>
+    <div class="pol-label">${label}<br>${sub}</div>
+  </div>`;
+}
+function updatePolViz() {
+  const beta = parseInt(document.getElementById('betaSlider').value);
+  document.getElementById('betaVal').textContent = beta + '°';
+  document.getElementById('polViz').innerHTML =
+    polSVG(90, '#1d4ed8', 'Polarizer', '入射 ↕') +
+    `<div class="pol-arrow">→</div>` +
+    `<div class="pol-box"><svg width="84" height="84" viewBox="0 0 84 84"><rect x="6" y="20" width="72" height="44" rx="2" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5"/><text x="42" y="46" text-anchor="middle" fill="#0369a1" font-size="9">糖水</text></svg><div class="pol-label">旋轉 β=${beta}°</div></div>` +
+    `<div class="pol-arrow">→</div>` +
+    polSVG(90 + beta, '#15803d', 'Analyzer', '需轉 ' + beta + '°') +
+    `<div class="pol-arrow">→</div>` +
+    `<div class="pol-box"><svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="26" fill="none" stroke="#b45309" stroke-width="2"/><text x="42" y="48" text-anchor="middle" fill="#b45309" font-size="14">👁</text></svg><div class="pol-label">面對光源</div></div>`;
+}
+updatePolViz();
+
+// Example data (for reference preview only)
+const exampleBeta = {
+  450: [11.0, 27.0, 38.0, 51.5],
+  500: [10.0, 22.0, 31.0, 45.0],
+  550: [8.5,  18.0, 27.0, 36.0],
+  600: [8.0,  15.0, 23.0, 30.5],
+  650: [6.0,  12.5, 18.0, 25.0],
+};
+
+function loadExampleData() {
+  document.querySelectorAll('#chartTbody tr').forEach((row, wi) => {
+    const nm = wavelengths[wi].nm;
+    const cells = row.querySelectorAll('.beta-cell');
+    const values = exampleBeta[nm];
+    cells.forEach((c, i) => { c.textContent = values[i]; });
+  });
+  drawCharts();
+}
+
+function clearChartData() {
+  document.querySelectorAll('#chartTbody .beta-cell').forEach(c => { c.textContent = ''; });
+  drawCharts();
+}
+
+let chart1, chart2;
+function drawCharts() {
+  // Read user-entered β values
+  const data = wavelengths.map((w, wi) => {
+    const row = document.querySelector(`tr[data-wi="${wi}"]`);
+    const cells = row.querySelectorAll('.beta-cell');
+    const points = [{x: 0, y: 0}];
+    cells.forEach(c => {
+      const pkt = parseInt(c.dataset.pkt);
+      const v = parseFloat(c.textContent);
+      if (!isNaN(v)) points.push({x: pkt, y: v});
+    });
+    return { wi, w, points };
+  });
+
+  // Chart 1: β vs packets
+  const datasets1 = data.map(d => ({
+    label: `${d.w.nm} nm ${d.w.name}`,
+    data: d.points,
+    borderColor: d.w.color,
+    backgroundColor: d.w.color,
+    pointRadius: 5, pointHoverRadius: 7,
+    showLine: true, tension: 0, borderWidth: 2,
+  }));
+
+  if (chart1) chart1.destroy();
+  chart1 = new Chart(document.getElementById('chart1').getContext('2d'), {
+    type: 'scatter',
+    data: { datasets: datasets1 },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#1a1a1a', font: { family: 'JetBrains Mono', size: 11 }, usePointStyle: true } },
+        title: { display: true, text: 'β vs. 包糖數', color: '#1a1a1a', font: { size: 13, weight: '700' } },
+      },
+      scales: {
+        x: { title: { display: true, text: '包糖數', color: '#4a4a4a' }, ticks: { color: '#4a4a4a' }, grid: { color: '#efece5' }, min: 0, max: 16 },
+        y: { title: { display: true, text: '旋轉角 β (°)', color: '#4a4a4a' }, ticks: { color: '#4a4a4a' }, grid: { color: '#efece5' }, min: 0 }
+      }
+    }
+  });
+
+  // Chart 2: β vs 1/λ² (one line per packet)
+  const packetGroups = [4, 8, 12, 16].map((pkt, ci) => {
+    const points = data.map(d => {
+      const pt = d.points.find(p => p.x === pkt);
+      if (!pt) return null;
+      const inv = parseFloat((1e6 / (d.w.nm * d.w.nm)).toFixed(3));
+      return { x: inv, y: pt.y };
+    }).filter(p => p !== null);
+    return { pkt, points };
+  });
+
+  const concColors = ['#0369a1','#15803d','#b45309','#b91c1c'];
+  const datasets2 = packetGroups.map((g, ci) => ({
+    label: `${g.pkt} 包糖`,
+    data: g.points,
+    borderColor: concColors[ci],
+    backgroundColor: concColors[ci],
+    pointRadius: 5, pointHoverRadius: 7,
+    showLine: true, tension: 0, borderWidth: 2,
+  }));
+
+  if (chart2) chart2.destroy();
+  chart2 = new Chart(document.getElementById('chart2').getContext('2d'), {
+    type: 'scatter',
+    data: { datasets: datasets2 },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#1a1a1a', font: { family: 'JetBrains Mono', size: 11 } } },
+        title: { display: true, text: 'β vs. 1/λ²', color: '#1a1a1a', font: { size: 13, weight: '700' } },
+      },
+      scales: {
+        x: { title: { display: true, text: '1/λ² (μm⁻²)', color: '#4a4a4a' }, ticks: { color: '#4a4a4a' }, grid: { color: '#efece5' } },
+        y: { title: { display: true, text: '旋轉角 β (°)', color: '#4a4a4a' }, ticks: { color: '#4a4a4a' }, grid: { color: '#efece5' }, min: 0 }
+      }
+    }
+  });
+}
+
+function toggleQA(el) {
+  el.classList.toggle('open');
+  el.nextElementSibling.classList.toggle('open');
+}
+</script>
+</body>
+</html>

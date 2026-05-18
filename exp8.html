@@ -1,0 +1,2213 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f8fafc">
+<title>實驗八：繞射與傅氏光學</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light only;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface2: #f1f5f9;
+    --border: #e2e8f0;
+    --accent: #0284c7;
+    --accent2: #7c3aed;
+    --accent3: #059669;
+    --gold: #d97706;
+    --red: #dc2626;
+    --text: #0f172a;
+    --text-dim: #475569;
+    --text-faint: #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: #f8fafc !important;
+    background-color: #f8fafc !important;
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: #f8fafc;
+    z-index: -1;
+  }
+
+  body {
+    color: #0f172a;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e0f2fe 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 2rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(2,132,199,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-inner { max-width: 1100px; margin: 0 auto; position: relative; }
+  .exp-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    border: 1px solid rgba(2,132,199,0.4);
+    padding: 0.25rem 0.75rem;
+    border-radius: 2px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    background: rgba(2,132,199,0.05);
+  }
+  header h1 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+  }
+  header h1 span { color: var(--accent); }
+  .header-sub {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Nav tabs ── */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; gap: 0; overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-dim);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 400;
+    padding: 0.9rem 1.3rem;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: rgba(2,132,199,0.05);
+  }
+
+  /* ── Layout ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* ── Section heading ── */
+  .sec-head {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.8rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-icon {
+    width: 38px; height: 38px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .sec-head h2 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.25rem; font-weight: 700;
+    color: var(--text);
+  }
+  .sec-head p { font-size: 0.82rem; color: var(--text-dim); margin-top: 0.15rem; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.2rem;
+  }
+  .card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  .card p, .card li { font-size: 0.9rem; color: var(--text-dim); line-height: 1.8; }
+  .card ul, .card ol { padding-left: 1.4rem; }
+  .card li { margin-bottom: 0.4rem; }
+  .card strong { color: var(--text); font-weight: 500; }
+
+  /* ── Formula ── */
+  .formula-box {
+    background: rgba(2,132,199,0.05);
+    border: 1px solid rgba(2,132,199,0.2);
+    border-radius: 8px;
+    padding: 1rem 1.4rem;
+    margin: 1rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    color: var(--accent);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .formula-box small {
+    display: block; margin-top: 0.4rem;
+    font-size: 0.75rem; color: var(--text-dim);
+    font-family: 'Noto Sans TC', sans-serif;
+    letter-spacing: 0;
+  }
+
+  /* ── Steps ── */
+  .steps { list-style: none; padding: 0; }
+  .step {
+    display: flex; gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem 1.2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .step:hover { border-color: rgba(2,132,199,0.3); }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(2,132,199,0.1);
+    border: 1px solid rgba(2,132,199,0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 0.1rem;
+  }
+  .step-body { flex: 1; }
+  .step-body strong { color: var(--text); font-size: 0.88rem; display: block; margin-bottom: 0.3rem; }
+  .step-body p { font-size: 0.84rem; color: var(--text-dim); line-height: 1.7; }
+
+  /* ── Part headers ── */
+  .part-header {
+    background: linear-gradient(90deg, rgba(2,132,199,0.08) 0%, transparent 100%);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 0.7rem 1.2rem;
+    margin: 1.8rem 0 1rem;
+  }
+  .part-header h3 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1rem; font-weight: 700; color: var(--text);
+  }
+  .part-header p { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.2rem; }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; margin: 1rem 0; }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.84rem;
+  }
+  thead tr {
+    background: rgba(2,132,199,0.08);
+    border-bottom: 1px solid rgba(2,132,199,0.3);
+  }
+  thead th {
+    padding: 0.65rem 0.9rem;
+    text-align: center;
+    font-weight: 500;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  tbody td {
+    padding: 0.55rem 0.9rem;
+    text-align: center;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+  }
+  tbody td.label { text-align: left; color: var(--text); font-family: 'Noto Sans TC', sans-serif; }
+  .table-note { font-size: 0.78rem; color: var(--text-faint); margin-top: 0.6rem; font-style: italic; }
+
+  /* ── Canvas charts ── */
+  .chart-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin: 1.2rem 0;
+  }
+  .chart-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  canvas { display: block; width: 100%; }
+
+  /* ── Info grid ── */
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; }
+  .info-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .info-val { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; color: var(--accent); font-weight: 500; }
+  .info-label { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.3rem; }
+
+  /* ── Q&A ── */
+  .qa-item { margin-bottom: 1rem; }
+  .qa-q {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: background 0.2s;
+  }
+  .qa-q:hover { background: rgba(255,255,255,0.03); }
+  .qa-q span { font-size: 0.88rem; color: var(--text); font-weight: 500; }
+  .qa-toggle { color: var(--accent); font-size: 1rem; transition: transform 0.25s; }
+  .qa-a {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border); border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 1rem 1.2rem;
+    font-size: 0.86rem; color: var(--text-dim); line-height: 1.75;
+  }
+  .qa-item.open .qa-a { display: block; }
+  .qa-item.open .qa-toggle { transform: rotate(45deg); }
+
+  /* ── Equipment list ── */
+  .equip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.8rem; }
+  .equip-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    display: flex; gap: 0.7rem; align-items: center;
+  }
+  .equip-icon { font-size: 1.2rem; }
+  .equip-name { font-size: 0.82rem; color: var(--text); }
+  .equip-cnt { font-size: 0.72rem; color: var(--text-dim); }
+
+  /* ── Highlight ── */
+  .hl-blue  { color: var(--accent); }
+  .hl-green { color: var(--accent3); }
+  .hl-gold  { color: var(--gold); }
+  .hl-red   { color: var(--red); }
+  .hl-purple{ color: var(--accent2); }
+
+  /* ── Optical setup diagram ── */
+  .setup-diagram {
+    background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1rem 0.8rem;
+    margin: 1rem 0 1.4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .setup-diagram::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(2,132,199,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(2,132,199,0.08) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+  }
+  .setup-diagram svg { display: block; width: 100%; height: auto; position: relative; z-index: 1; }
+  .setup-caption {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+    margin-top: 0.4rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--border);
+    position: relative; z-index: 1;
+  }
+  .setup-caption strong { color: var(--accent); font-weight: 500; }
+
+  /* ── Report data callout ── */
+  .report-box {
+    background: linear-gradient(135deg, rgba(124,58,237,0.06) 0%, rgba(2,132,199,0.08) 100%);
+    border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+    margin: 1.2rem 0;
+    position: relative;
+  }
+  .report-tag {
+    position: absolute;
+    top: -10px; left: 16px;
+    background: var(--bg);
+    color: var(--accent2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    padding: 0.2rem 0.7rem;
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 3px;
+    letter-spacing: 0.1em;
+  }
+  .report-box h4 {
+    color: var(--accent2);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+  .report-box p { font-size: 0.85rem; color: var(--text-dim); line-height: 1.75; }
+
+  /* ── Diffraction visualization gallery ── */
+  .diff-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin: 1rem 0; }
+  .diff-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem;
+    overflow: hidden;
+  }
+  .diff-svg-box {
+    background: #000;
+    border-radius: 6px;
+    aspect-ratio: 1.4 / 1;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 0.6rem;
+  }
+  .diff-svg-box svg { width: 100%; height: 100%; }
+  .diff-card h5 {
+    color: var(--accent3);
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+  }
+  .diff-card p { font-size: 0.76rem; color: var(--text-dim); line-height: 1.6; }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    header { padding: 1.5rem 1rem 1.2rem; }
+    main { padding: 1.2rem 1rem 3rem; }
+    .tab-btn { padding: 0.75rem 0.9rem; font-size: 0.78rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="exp-badge">Experiment 08 · NTHU Physics Optics Lab</div>
+    <h1>實驗八：<span>繞射與傅氏光學</span></h1>
+    <div class="header-sub">Diffraction and Fourier Optics &nbsp;·&nbsp; He-Ne Laser 633 nm</div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <button class="tab-btn active" onclick="showTab('overview', this)">📋 實驗總覽</button>
+    <button class="tab-btn" onclick="showTab('partA', this)">🔵 A 遠/近場繞射</button>
+    <button class="tab-btn" onclick="showTab('partB', this)">🧬 B DNA繞射</button>
+    <button class="tab-btn" onclick="showTab('partC', this)">🔭 C 傅氏光學</button>
+    <button class="tab-btn" onclick="showTab('partD', this)">🎛️ D 空間濾波</button>
+    <button class="tab-btn" onclick="showTab('data', this)">📊 數據與圖表</button>
+    <button class="tab-btn" onclick="showTab('qa', this)">💬 問題討論</button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ════════════ OVERVIEW ════════════ -->
+<div id="overview" class="section active">
+  <div class="sec-head">
+    <div class="sec-icon" style="background:rgba(2,132,199,0.1);">📋</div>
+    <div>
+      <h2>實驗目的與核心概念</h2>
+      <p>建立繞射、傅氏轉換與空間濾波的完整圖像</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">核心概念</div>
+    <p>本實驗的核心：<strong>物體的幾何結構決定其繞射圖樣</strong>，而透鏡焦平面上的繞射圖樣本質上就是物體<strong>空間頻率的分布</strong>（傅立葉轉換）。</p>
+    <div class="formula-box">
+      U<sub>f</sub>(f<sub>x</sub>, f<sub>y</sub>) ∝ ∬ U(x,y) · e<sup>−i2π(f<sub>x</sub>x + f<sub>y</sub>y)</sup> dx dy
+      <small>透鏡焦平面上的振幅分布 = 物體透光函數的 Fourier Transform</small>
+    </div>
+  </div>
+
+  <div class="setup-diagram">
+    <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="110" x2="680" y2="110" stroke="#0284c7" stroke-width="1" stroke-dasharray="2,3" opacity="0.4"/>
+
+      <!-- Object plane -->
+      <g>
+        <rect x="80" y="65" width="6" height="90" fill="#f1f5f9" stroke="#059669" stroke-width="1.2"/>
+        <line x1="80" y1="78" x2="86" y2="78" stroke="#059669" stroke-width="0.5"/>
+        <line x1="80" y1="92" x2="86" y2="92" stroke="#059669" stroke-width="0.5"/>
+        <line x1="80" y1="106" x2="86" y2="106" stroke="#059669" stroke-width="0.5"/>
+        <line x1="80" y1="120" x2="86" y2="120" stroke="#059669" stroke-width="0.5"/>
+        <line x1="80" y1="134" x2="86" y2="134" stroke="#059669" stroke-width="0.5"/>
+        <text x="83" y="56" text-anchor="middle" fill="#059669" font-size="9" font-family="JetBrains Mono" font-weight="bold">物體 PL₁</text>
+        <text x="83" y="170" text-anchor="middle" fill="#059669" font-size="8" font-family="JetBrains Mono">t(x, y)</text>
+      </g>
+
+      <!-- Plane wave -->
+      <g stroke="#dc2626" stroke-width="0.8" fill="none">
+        <line x1="30" y1="80" x2="78" y2="80"/>
+        <line x1="30" y1="100" x2="78" y2="100"/>
+        <line x1="30" y1="120" x2="78" y2="120"/>
+        <line x1="30" y1="140" x2="78" y2="140"/>
+        <path d="M 73 76 L 78 80 L 73 84"/>
+        <path d="M 73 96 L 78 100 L 73 104"/>
+        <path d="M 73 116 L 78 120 L 73 124"/>
+        <path d="M 73 136 L 78 140 L 73 144"/>
+      </g>
+      <text x="50" y="195" text-anchor="middle" fill="#dc2626" font-size="8" font-family="JetBrains Mono">平面波</text>
+
+      <line x1="86" y1="110" x2="245" y2="65" stroke="#d97706" stroke-width="0.5" opacity="0.5"/>
+      <line x1="86" y1="110" x2="245" y2="155" stroke="#d97706" stroke-width="0.5" opacity="0.5"/>
+      <line x1="86" y1="110" x2="245" y2="110" stroke="#d97706" stroke-width="0.5" opacity="0.4" stroke-dasharray="2,2"/>
+
+      <!-- L1 -->
+      <g>
+        <ellipse cx="250" cy="110" rx="7" ry="48" fill="rgba(2,132,199,0.2)" stroke="#0284c7" stroke-width="1.5"/>
+        <text x="250" y="50" text-anchor="middle" fill="#0284c7" font-size="11" font-family="JetBrains Mono" font-weight="bold">L₁</text>
+        <text x="250" y="180" text-anchor="middle" fill="#0284c7" font-size="7" font-family="JetBrains Mono">傅氏轉換透鏡</text>
+      </g>
+
+      <line x1="250" y1="62" x2="380" y2="110" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+      <line x1="250" y1="158" x2="380" y2="110" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+
+      <!-- Fourier plane -->
+      <g>
+        <line x1="380" y1="60" x2="380" y2="160" stroke="#d97706" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <text x="380" y="50" text-anchor="middle" fill="#d97706" font-size="9" font-family="JetBrains Mono" font-weight="bold">傅氏平面 PL₂</text>
+        <circle cx="380" cy="110" r="3.5" fill="#d97706"/>
+        <circle cx="380" cy="92" r="2" fill="#d97706" opacity="0.8"/>
+        <circle cx="380" cy="128" r="2" fill="#d97706" opacity="0.8"/>
+        <circle cx="380" cy="78" r="1.4" fill="#d97706" opacity="0.6"/>
+        <circle cx="380" cy="142" r="1.4" fill="#d97706" opacity="0.6"/>
+        <text x="380" y="180" text-anchor="middle" fill="#d97706" font-size="7" font-family="JetBrains Mono">空間頻率</text>
+        <text x="380" y="190" text-anchor="middle" fill="#d97706" font-size="7" font-family="JetBrains Mono">F{t(x,y)}</text>
+      </g>
+
+      <line x1="380" y1="110" x2="510" y2="62" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+      <line x1="380" y1="110" x2="510" y2="158" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+
+      <!-- L2 -->
+      <g>
+        <ellipse cx="515" cy="110" rx="7" ry="48" fill="rgba(124,58,237,0.2)" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="515" y="50" text-anchor="middle" fill="#7c3aed" font-size="11" font-family="JetBrains Mono" font-weight="bold">L₂</text>
+        <text x="515" y="180" text-anchor="middle" fill="#7c3aed" font-size="7" font-family="JetBrains Mono">反傅氏轉換</text>
+      </g>
+
+      <line x1="515" y1="62" x2="640" y2="110" stroke="#059669" stroke-width="0.6" opacity="0.6"/>
+      <line x1="515" y1="158" x2="640" y2="110" stroke="#059669" stroke-width="0.6" opacity="0.6"/>
+
+      <!-- Image plane -->
+      <g>
+        <rect x="640" y="65" width="6" height="90" fill="#f1f5f9" stroke="#059669" stroke-width="1.5"/>
+        <line x1="640" y1="78" x2="646" y2="78" stroke="#059669" stroke-width="0.5"/>
+        <line x1="640" y1="92" x2="646" y2="92" stroke="#059669" stroke-width="0.5"/>
+        <line x1="640" y1="106" x2="646" y2="106" stroke="#059669" stroke-width="0.5"/>
+        <line x1="640" y1="120" x2="646" y2="120" stroke="#059669" stroke-width="0.5"/>
+        <line x1="640" y1="134" x2="646" y2="134" stroke="#059669" stroke-width="0.5"/>
+        <text x="643" y="56" text-anchor="middle" fill="#059669" font-size="9" font-family="JetBrains Mono" font-weight="bold">影像 PL₃</text>
+        <text x="643" y="170" text-anchor="middle" fill="#059669" font-size="7" font-family="JetBrains Mono">重建影像</text>
+      </g>
+
+      <g font-family="JetBrains Mono" font-size="8">
+        <rect x="40" y="14" width="90" height="20" rx="3" fill="rgba(5,150,105,0.1)" stroke="#059669" stroke-width="0.6"/>
+        <text x="85" y="27" text-anchor="middle" fill="#059669">① 物體幾何</text>
+
+        <rect x="335" y="14" width="90" height="20" rx="3" fill="rgba(217,119,6,0.1)" stroke="#d97706" stroke-width="0.6"/>
+        <text x="380" y="27" text-anchor="middle" fill="#d97706">② 頻率分布</text>
+
+        <rect x="595" y="14" width="100" height="20" rx="3" fill="rgba(5,150,105,0.1)" stroke="#059669" stroke-width="0.6"/>
+        <text x="645" y="27" text-anchor="middle" fill="#059669">③ 還原影像</text>
+      </g>
+    </svg>
+    <div class="setup-caption">圖 8-1：<strong>傅氏光學整體框架</strong> — 物體幾何 → Fourier Transform → 反傅立葉重建</div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-item">
+      <div class="info-val">4</div>
+      <div class="info-label">實驗部分 (A, B, C, D)</div>
+    </div>
+    <div class="info-item">
+      <div class="info-val">633 nm</div>
+      <div class="info-label">He-Ne 雷射波長</div>
+    </div>
+    <div class="info-item">
+      <div class="info-val">F = a²/Lλ</div>
+      <div class="info-label">Fresnel Number 判準</div>
+    </div>
+    <div class="info-item">
+      <div class="info-val">1.22 λ/D</div>
+      <div class="info-label">Airy disk 第一暗環 sin θ</div>
+    </div>
+  </div>
+
+  <div class="part-header" style="border-left-color:var(--accent3)">
+    <h3>⚙️ 儀器設備清單</h3>
+  </div>
+  <div class="equip-grid">
+    <div class="equip-item"><span class="equip-icon">🔴</span><div><div class="equip-name">氦氖雷射</div><div class="equip-cnt">×1</div></div></div>
+    <div class="equip-item"><span class="equip-icon">🔬</span><div><div class="equip-name">空間濾波器 (Spatial Filter)</div><div class="equip-cnt">×1</div></div></div>
+    <div class="equip-item"><span class="equip-icon">🔲</span><div><div class="equip-name">透鏡 (L1, L2)</div><div class="equip-cnt">數個</div></div></div>
+    <div class="equip-item"><span class="equip-icon">📏</span><div><div class="equip-name">光學軌道 + 架</div><div class="equip-cnt">×1 組</div></div></div>
+    <div class="equip-item"><span class="equip-icon">🗂️</span><div><div class="equip-name">繞射孔徑片盒</div><div class="equip-cnt">×1 盒</div></div></div>
+    <div class="equip-item"><span class="equip-icon">🌀</span><div><div class="equip-name">小彈簧 (模擬 DNA)</div><div class="equip-cnt">數個</div></div></div>
+    <div class="equip-item"><span class="equip-icon">📐</span><div><div class="equip-name">皮尺 / 游標卡尺</div><div class="equip-cnt">各×1</div></div></div>
+    <div class="equip-item"><span class="equip-icon">🖥️</span><div><div class="equip-name">白色屏幕</div><div class="equip-cnt">×1</div></div></div>
+  </div>
+</div>
+
+<!-- ════════════ PART A ════════════ -->
+<div id="partA" class="section">
+  <div class="sec-head">
+    <div class="sec-icon" style="background:rgba(2,132,199,0.12);">🔵</div>
+    <div>
+      <h2>Part A：遠場與近場繞射</h2>
+      <p>觀察 Airy disk，建立孔徑形狀與繞射圖樣的對應</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">判斷近場 vs 遠場</div>
+    <p>以 <strong>Fresnel Number</strong> 判斷適用哪種繞射模型：</p>
+    <div class="formula-box">
+      F = a² / (L λ)
+      <small>a = 孔洞半徑，L = 孔洞到屏幕距離，λ = 波長（633 nm）</small>
+    </div>
+    <ul>
+      <li><strong class="hl-blue">F ≥ 1（近場 Fresnel）：</strong>光源球面波入射，屏幕距孔徑較近</li>
+      <li><strong class="hl-green">F ≪ 1（遠場 Fraunhofer）：</strong>可視為平面波，用透鏡平行擴束</li>
+    </ul>
+  </div>
+
+  <div class="part-header">
+    <h3>🎯 A-1：遠場繞射實驗步驟</h3>
+    <p>估算 pin hole 直徑，觀察各繞射孔徑圖樣</p>
+  </div>
+
+  <div class="setup-diagram">
+    <svg viewBox="0 0 700 160" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="80" x2="680" y2="80" stroke="#0284c7" stroke-width="1" stroke-dasharray="2,3" opacity="0.5"/>
+
+      <rect x="30" y="60" width="70" height="40" rx="3" fill="#f1f5f9" stroke="#dc2626" stroke-width="1.5"/>
+      <rect x="35" y="65" width="60" height="6" fill="#dc2626" opacity="0.3"/>
+      <text x="65" y="86" text-anchor="middle" fill="#1e293b" font-size="9" font-family="JetBrains Mono">He-Ne</text>
+      <text x="65" y="96" text-anchor="middle" fill="#1e293b" font-size="9" font-family="JetBrains Mono">Laser</text>
+      <text x="65" y="120" text-anchor="middle" fill="#475569" font-size="8">633 nm</text>
+
+      <line x1="100" y1="80" x2="160" y2="80" stroke="#dc2626" stroke-width="1.5"/>
+
+      <g>
+        <ellipse cx="170" cy="80" rx="6" ry="22" fill="rgba(2,132,199,0.15)" stroke="#0284c7" stroke-width="1.2"/>
+        <line x1="195" y1="55" x2="195" y2="75" stroke="#94a3b8" stroke-width="1.5"/>
+        <line x1="195" y1="85" x2="195" y2="105" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="182" y="135" text-anchor="middle" fill="#475569" font-size="9" font-family="JetBrains Mono">Spatial Filter</text>
+      </g>
+
+      <line x1="195" y1="80" x2="380" y2="40" stroke="#d97706" stroke-width="0.8" opacity="0.6"/>
+      <line x1="195" y1="80" x2="380" y2="120" stroke="#d97706" stroke-width="0.8" opacity="0.6"/>
+      <line x1="195" y1="80" x2="380" y2="80" stroke="#d97706" stroke-width="0.8" opacity="0.4" stroke-dasharray="3,3"/>
+
+      <g>
+        <path d="M 380 18 L 380 38" stroke="#059669" stroke-width="1.5"/>
+        <path d="M 376 32 L 380 38 L 384 32" fill="none" stroke="#059669" stroke-width="1.5"/>
+        <text x="380" y="14" text-anchor="middle" fill="#059669" font-size="8" font-family="JetBrains Mono">放置孔徑處</text>
+      </g>
+
+      <rect x="377" y="50" width="6" height="60" fill="#cbd5e1" stroke="#059669" stroke-width="1"/>
+      <line x1="380" y1="74" x2="380" y2="86" stroke="#ffffff" stroke-width="2"/>
+
+      <line x1="383" y1="80" x2="600" y2="40" stroke="#d97706" stroke-width="0.6" opacity="0.5"/>
+      <line x1="383" y1="80" x2="600" y2="120" stroke="#d97706" stroke-width="0.6" opacity="0.5"/>
+      <line x1="383" y1="80" x2="600" y2="60" stroke="#d97706" stroke-width="0.6" opacity="0.4"/>
+      <line x1="383" y1="80" x2="600" y2="100" stroke="#d97706" stroke-width="0.6" opacity="0.4"/>
+      <line x1="383" y1="80" x2="600" y2="80" stroke="#d97706" stroke-width="0.6" opacity="0.3" stroke-dasharray="2,3"/>
+
+      <rect x="600" y="30" width="6" height="100" fill="#f1f5f9" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="603" y="148" text-anchor="middle" fill="#7c3aed" font-size="9" font-family="JetBrains Mono">Screen</text>
+
+      <g transform="translate(620, 80)">
+        <circle r="3" fill="#0284c7"/>
+        <circle r="8" fill="none" stroke="#0284c7" stroke-width="0.6" opacity="0.6"/>
+        <circle r="14" fill="none" stroke="#0284c7" stroke-width="0.4" opacity="0.4"/>
+        <circle r="20" fill="none" stroke="#0284c7" stroke-width="0.3" opacity="0.25"/>
+      </g>
+
+      <g>
+        <line x1="383" y1="145" x2="600" y2="145" stroke="#94a3b8" stroke-width="0.8"/>
+        <line x1="383" y1="142" x2="383" y2="148" stroke="#94a3b8" stroke-width="0.8"/>
+        <line x1="600" y1="142" x2="600" y2="148" stroke="#94a3b8" stroke-width="0.8"/>
+        <text x="491" y="156" text-anchor="middle" fill="#475569" font-size="9" font-family="JetBrains Mono">L</text>
+      </g>
+    </svg>
+    <div class="setup-caption">圖 A-1：<strong>遠場繞射光路</strong> — Lens 移除，Spatial Filter 後置入孔徑，屏幕距離 L 記錄繞射圖形</div>
+  </div>
+
+  <ol class="steps">
+    <li class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>移除 Lens，調整 Spatial Filter</strong>
+        <p>移除光路中的透鏡，調節 spatial filter 前後左右位置，使 pin hole 的繞射圖形（Airy disk）清楚顯現在屏幕上。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>量測 Airy disk 估算 pin hole 直徑</strong>
+        <p>量取中央亮斑半徑 r（中心到第一暗環的距離）以及 pin hole 到屏幕距離 L，代入：</p>
+        <div class="formula-box" style="font-size:0.85rem; text-align:left; padding:0.7rem 1rem;">
+          D ≈ 1.22 × λ × L / r &nbsp;&nbsp;（r = 中央亮斑半徑，sin θ ≈ r/L）
+        </div>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>依序觀察各繞射孔徑</strong>
+        <p>將下列孔徑依序放入光路，觀察並記錄繞射圖樣：<br>
+        → 單狹縫 → 多狹縫 → 光柵（多個） → 細方格陣列 (fine gauze)</p>
+      </div>
+    </li>
+  </ol>
+
+  <!-- Pin hole measurement example -->
+  <div class="card">
+    <div class="card-title">Pin hole 直徑量測（範例數據）</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>L (mm)</th><th>r 中央亮斑半徑 (mm)</th><th>D 推算直徑 (μm)</th></tr></thead>
+        <tbody>
+          <tr><td>420</td><td>34.25</td><td>9.47</td></tr>
+          <tr><td>490</td><td>40.0</td><td>9.46</td></tr>
+          <tr><td>665</td><td>52.5</td><td>9.78</td></tr>
+          <tr><td colspan="2"><strong>平均直徑 D<sub>avg</sub></strong></td><td><strong style="color:var(--accent)">≈ 9.57 μm</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:0.6rem; font-size:0.85rem; color:var(--text-dim)">三組數據彼此一致，且 r 與 L 呈線性關係，符合遠場繞射理論預測。平均直徑約 9.57 μm。</p>
+  </div>
+
+  <!-- Linear relation chart -->
+  <div class="chart-container">
+    <div class="chart-title">r vs L 線性關係驗證</div>
+    <canvas id="linearCanvas" height="240"></canvas>
+    <p class="table-note">由 r ≈ 1.22λL/D 可知 r 與 L 為線性正比關係，斜率為 1.22λ/D。三組數據點貼近理論直線，斜率反推 D ≈ 9.57 μm。</p>
+  </div>
+
+  <!-- Diffraction formula application -->
+  <div class="card">
+    <div class="card-title">⚙️ 反推幾何尺寸的核心公式</div>
+
+    <p style="margin-top:0.4rem; font-size:0.88rem; color:var(--text-dim)"><strong style="color:var(--accent3)">① 圓孔（Airy disk）：</strong></p>
+    <div class="formula-box" style="font-size:0.85rem; padding:0.7rem 1rem;">
+      D ≈ 1.22 λL / r &nbsp;&nbsp;（r = 中央亮斑半徑，sin θ ≈ r/L）
+    </div>
+
+    <p style="margin-top:0.8rem; font-size:0.88rem; color:var(--text-dim)"><strong style="color:var(--accent3)">② 雙／多狹縫間距：</strong></p>
+    <div class="formula-box" style="font-size:0.85rem; padding:0.7rem 1rem;">
+      d sin θ = mλ &nbsp;&nbsp;（小角近似 sin θ ≈ Δy/L）
+    </div>
+
+    <p style="margin-top:0.8rem; font-size:0.88rem; color:var(--text-dim)"><strong style="color:var(--accent3)">③ 單狹縫寬度：</strong></p>
+    <div class="formula-box" style="font-size:0.85rem; padding:0.7rem 1rem;">
+      a sin θ = mλ &nbsp;&nbsp;（中央亮紋第一暗點位置）
+    </div>
+  </div>
+
+  <div class="part-header">
+    <h3>🎯 A-2：近場繞射實驗步驟</h3>
+    <p>球面波入射，觀察 Fresnel 繞射結構</p>
+  </div>
+
+  <div class="setup-diagram">
+    <svg viewBox="0 0 700 160" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="80" x2="680" y2="80" stroke="#0284c7" stroke-width="1" stroke-dasharray="2,3" opacity="0.5"/>
+
+      <rect x="30" y="60" width="70" height="40" rx="3" fill="#f1f5f9" stroke="#dc2626" stroke-width="1.5"/>
+      <rect x="35" y="65" width="60" height="6" fill="#dc2626" opacity="0.3"/>
+      <text x="65" y="86" text-anchor="middle" fill="#1e293b" font-size="9" font-family="JetBrains Mono">He-Ne</text>
+      <text x="65" y="96" text-anchor="middle" fill="#1e293b" font-size="9" font-family="JetBrains Mono">Laser</text>
+
+      <line x1="100" y1="80" x2="180" y2="80" stroke="#dc2626" stroke-width="1.5"/>
+
+      <g>
+        <ellipse cx="190" cy="80" rx="6" ry="22" fill="rgba(2,132,199,0.15)" stroke="#0284c7" stroke-width="1.2"/>
+        <line x1="215" y1="55" x2="215" y2="75" stroke="#94a3b8" stroke-width="1.5"/>
+        <line x1="215" y1="85" x2="215" y2="105" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="202" y="135" text-anchor="middle" fill="#475569" font-size="9" font-family="JetBrains Mono">Spatial Filter</text>
+      </g>
+
+      <line x1="215" y1="80" x2="320" y2="35" stroke="#d97706" stroke-width="0.8" opacity="0.6"/>
+      <line x1="215" y1="80" x2="320" y2="125" stroke="#d97706" stroke-width="0.8" opacity="0.6"/>
+
+      <g fill="none" stroke="#0284c7" stroke-width="0.6" opacity="0.4">
+        <path d="M 240 60 Q 250 80 240 100"/>
+        <path d="M 260 55 Q 272 80 260 105"/>
+        <path d="M 280 50 Q 295 80 280 110"/>
+      </g>
+      <text x="260" y="138" text-anchor="middle" fill="#0284c7" font-size="8" font-style="italic">球面波</text>
+
+      <g>
+        <rect x="320" y="42" width="6" height="76" fill="#cbd5e1" stroke="#059669" stroke-width="1"/>
+        <line x1="323" y1="74" x2="323" y2="86" stroke="#ffffff" stroke-width="2"/>
+        <text x="323" y="35" text-anchor="middle" fill="#059669" font-size="8" font-family="JetBrains Mono">可調圓孔/狹縫</text>
+        <text x="323" y="135" text-anchor="middle" fill="#059669" font-size="8" font-family="JetBrains Mono">半徑 a</text>
+      </g>
+
+      <line x1="326" y1="80" x2="540" y2="50" stroke="#d97706" stroke-width="0.6" opacity="0.4"/>
+      <line x1="326" y1="80" x2="540" y2="110" stroke="#d97706" stroke-width="0.6" opacity="0.4"/>
+
+      <rect x="540" y="35" width="6" height="90" fill="#f1f5f9" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="543" y="143" text-anchor="middle" fill="#7c3aed" font-size="9" font-family="JetBrains Mono">Screen</text>
+
+      <g transform="translate(560, 80)">
+        <circle r="2" fill="#ffffff" stroke="#0284c7" stroke-width="0.8"/>
+        <circle r="6" fill="none" stroke="#0284c7" stroke-width="0.7" opacity="0.7"/>
+        <circle r="10" fill="none" stroke="#d97706" stroke-width="0.5" opacity="0.5"/>
+        <circle r="14" fill="none" stroke="#0284c7" stroke-width="0.5" opacity="0.5"/>
+        <circle r="18" fill="none" stroke="#d97706" stroke-width="0.4" opacity="0.4"/>
+        <circle r="22" fill="none" stroke="#0284c7" stroke-width="0.4" opacity="0.3"/>
+      </g>
+      <text x="595" y="80" fill="#475569" font-size="8" font-style="italic">Fresnel</text>
+      <text x="595" y="92" fill="#475569" font-size="8" font-style="italic">zones</text>
+
+      <g>
+        <line x1="326" y1="148" x2="540" y2="148" stroke="#94a3b8" stroke-width="0.8"/>
+        <line x1="326" y1="145" x2="326" y2="151" stroke="#94a3b8" stroke-width="0.8"/>
+        <line x1="540" y1="145" x2="540" y2="151" stroke="#94a3b8" stroke-width="0.8"/>
+        <text x="433" y="158" text-anchor="middle" fill="#475569" font-size="9" font-family="JetBrains Mono">L (近)</text>
+      </g>
+    </svg>
+    <div class="setup-caption">圖 A-2：<strong>近場繞射光路</strong> — 屏幕緊靠孔徑，觀察 Fresnel zone 的亮暗交替</div>
+  </div>
+
+  <ol class="steps">
+    <li class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>架設近場繞射光路</strong>
+        <p>調整空間濾波器使雷射光束通過後產生球面波。將可調圓孔或可調狹縫放置在靠近空間濾波器出口處。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>記錄參數並觀察</strong>
+        <p>記錄圓孔半徑 a、屏幕距離 L，計算 Fresnel Number F，對應觀察屏幕中心亮/暗的變化。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>調整孔徑大小，觀察中心亮暗變化</strong>
+        <p>改變圓孔半徑或狹縫寬度，記錄屏幕中心附近光強度的亮暗交替現象。當光圈大時 F 大，圖樣較均勻；光圈縮小時 F 減小，繞射效應顯著，可見清晰同心圓干涉條紋。</p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="card">
+    <div class="card-title">近場繞射 — 光圈大小效應</div>
+    <p style="font-size:0.88rem; color:var(--text-dim)"><strong style="color:var(--text)">較大光圈：</strong>螢幕呈現一較寬廣且強度均勻的亮區，干涉條紋不明顯（F 較大，接近幾何光學）。</p>
+    <p style="margin-top:0.4rem; font-size:0.88rem; color:var(--text-dim)"><strong style="color:var(--text)">較小光圈：</strong>觀察到清晰的同心圓狀干涉條紋，繞射效應顯著增強（F 減小，波動效應變強）。</p>
+    <p style="margin-top:0.6rem; font-size:0.85rem; color:var(--text-faint)">建議實驗：用可調圓孔依序取三組尺寸（例：0.75 mm、1.25 mm、1.75 mm）；可調狹縫亦可比較，狹縫產生一維方向延展的非等向 Fresnel 圖樣。屏幕距 L 約 1 m。</p>
+  </div>
+
+  <div class="card" style="margin-top:1.5rem">
+    <div class="card-title">各繞射孔徑預期圖樣摘要</div>
+    <div class="diff-gallery">
+
+      <!-- Airy disk -->
+      <div class="diff-card">
+        <div class="diff-svg-box">
+          <svg viewBox="0 0 100 70">
+            <radialGradient id="airyG" cx="50%" cy="50%">
+              <stop offset="0%" stop-color="#ff6b6b" stop-opacity="1"/>
+              <stop offset="15%" stop-color="#ff6b6b" stop-opacity="0.9"/>
+              <stop offset="20%" stop-color="#000" stop-opacity="1"/>
+              <stop offset="28%" stop-color="#ff6b6b" stop-opacity="0.4"/>
+              <stop offset="33%" stop-color="#000" stop-opacity="1"/>
+              <stop offset="42%" stop-color="#ff6b6b" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#000" stop-opacity="1"/>
+            </radialGradient>
+            <rect width="100" height="70" fill="#000"/>
+            <circle cx="50" cy="35" r="32" fill="url(#airyG)"/>
+          </svg>
+        </div>
+        <h5>圓孔 — Airy Disk</h5>
+        <p>同心圓亮環，84% 強度集中於中央亮斑</p>
+      </div>
+
+      <!-- Single slit -->
+      <div class="diff-card">
+        <div class="diff-svg-box">
+          <svg viewBox="0 0 100 70">
+            <rect width="100" height="70" fill="#000"/>
+            <ellipse cx="50" cy="35" rx="14" ry="10" fill="#ff6b6b" opacity="0.95"/>
+            <ellipse cx="32" cy="35" rx="3" ry="6" fill="#ff6b6b" opacity="0.4"/>
+            <ellipse cx="68" cy="35" rx="3" ry="6" fill="#ff6b6b" opacity="0.4"/>
+            <ellipse cx="22" cy="35" rx="2" ry="4" fill="#ff6b6b" opacity="0.18"/>
+            <ellipse cx="78" cy="35" rx="2" ry="4" fill="#ff6b6b" opacity="0.18"/>
+          </svg>
+        </div>
+        <h5>單狹縫</h5>
+        <p>中央亮紋寬，兩側對稱衰減（sinc² 包絡）</p>
+      </div>
+
+      <!-- Double slit -->
+      <div class="diff-card">
+        <div class="diff-svg-box">
+          <svg viewBox="0 0 100 70">
+            <rect width="100" height="70" fill="#000"/>
+            <ellipse cx="50" cy="35" rx="3" ry="9" fill="#ff6b6b" opacity="1"/>
+            <ellipse cx="40" cy="35" rx="2.5" ry="7" fill="#ff6b6b" opacity="0.7"/>
+            <ellipse cx="60" cy="35" rx="2.5" ry="7" fill="#ff6b6b" opacity="0.7"/>
+            <ellipse cx="30" cy="35" rx="2" ry="5" fill="#ff6b6b" opacity="0.4"/>
+            <ellipse cx="70" cy="35" rx="2" ry="5" fill="#ff6b6b" opacity="0.4"/>
+            <ellipse cx="20" cy="35" rx="1.5" ry="3" fill="#ff6b6b" opacity="0.2"/>
+            <ellipse cx="80" cy="35" rx="1.5" ry="3" fill="#ff6b6b" opacity="0.2"/>
+          </svg>
+        </div>
+        <h5>雙狹縫</h5>
+        <p>等間距條紋受 sinc² 包絡調制</p>
+      </div>
+
+      <!-- Multi-slit (6) -->
+      <div class="diff-card">
+        <div class="diff-svg-box">
+          <svg viewBox="0 0 100 70">
+            <rect width="100" height="70" fill="#000"/>
+            <ellipse cx="50" cy="35" rx="2" ry="11" fill="#ff6b6b" opacity="1"/>
+            <ellipse cx="40" cy="35" rx="1.6" ry="9" fill="#ff6b6b" opacity="0.85"/>
+            <ellipse cx="60" cy="35" rx="1.6" ry="9" fill="#ff6b6b" opacity="0.85"/>
+            <ellipse cx="30" cy="35" rx="1.4" ry="6" fill="#ff6b6b" opacity="0.55"/>
+            <ellipse cx="70" cy="35" rx="1.4" ry="6" fill="#ff6b6b" opacity="0.55"/>
+            <ellipse cx="20" cy="35" rx="1.2" ry="4" fill="#ff6b6b" opacity="0.3"/>
+            <ellipse cx="80" cy="35" rx="1.2" ry="4" fill="#ff6b6b" opacity="0.3"/>
+            <ellipse cx="10" cy="35" rx="1" ry="2" fill="#ff6b6b" opacity="0.15"/>
+            <ellipse cx="90" cy="35" rx="1" ry="2" fill="#ff6b6b" opacity="0.15"/>
+          </svg>
+        </div>
+        <h5>多狹縫 (N=6)</h5>
+        <p>條紋更銳利，主極大強度提升</p>
+      </div>
+
+      <!-- Grating -->
+      <div class="diff-card">
+        <div class="diff-svg-box">
+          <svg viewBox="0 0 100 70">
+            <rect width="100" height="70" fill="#000"/>
+            <circle cx="50" cy="35" r="3" fill="#ff6b6b"/>
+            <circle cx="34" cy="35" r="2.5" fill="#ff6b6b" opacity="0.85"/>
+            <circle cx="66" cy="35" r="2.5" fill="#ff6b6b" opacity="0.85"/>
+            <circle cx="18" cy="35" r="2" fill="#ff6b6b" opacity="0.6"/>
+            <circle cx="82" cy="35" r="2" fill="#ff6b6b" opacity="0.6"/>
+          </svg>
+        </div>
+        <h5>光柵</h5>
+        <p>等間距銳利亮點，間距 ∝ λ/d</p>
+      </div>
+
+      <!-- Fine gauze -->
+      <div class="diff-card">
+        <div class="diff-svg-box">
+          <svg viewBox="0 0 100 70">
+            <rect width="100" height="70" fill="#000"/>
+            <g fill="#ff6b6b">
+              <circle cx="50" cy="35" r="3"/>
+              <circle cx="34" cy="35" r="2.2" opacity="0.8"/>
+              <circle cx="66" cy="35" r="2.2" opacity="0.8"/>
+              <circle cx="50" cy="20" r="2.2" opacity="0.8"/>
+              <circle cx="50" cy="50" r="2.2" opacity="0.8"/>
+              <circle cx="34" cy="20" r="1.5" opacity="0.5"/>
+              <circle cx="66" cy="20" r="1.5" opacity="0.5"/>
+              <circle cx="34" cy="50" r="1.5" opacity="0.5"/>
+              <circle cx="66" cy="50" r="1.5" opacity="0.5"/>
+              <circle cx="18" cy="35" r="1.5" opacity="0.5"/>
+              <circle cx="82" cy="35" r="1.5" opacity="0.5"/>
+            </g>
+          </svg>
+        </div>
+        <h5>細方格陣列 (Fine Gauze)</h5>
+        <p>二維點陣，十字對稱結構</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ PART B ════════════ -->
+<div id="partB" class="section">
+  <div class="sec-head">
+    <div class="sec-icon" style="background:rgba(124,58,237,0.12);">🧬</div>
+    <div>
+      <h2>Part B：DNA 螺旋結構繞射圖形</h2>
+      <p>用小彈簧模擬 DNA 雙螺旋，由繞射圖反推幾何結構</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">為什麼用小彈簧？</div>
+    <p>DNA 雙螺旋的結構尺寸在奈米等級（直徑 ≈ 2 nm，pitch ≈ 3.4 nm），可見光波長太長無法解析。實驗以小彈簧（毫米尺度）模擬螺旋幾何，用 He-Ne 雷射觀察類似的 X 字型繞射圖案，這正是 Rosalind Franklin 拍攝的 Photo 51 中所見的特徵。</p>
+  </div>
+
+  <div class="part-header">
+    <h3>🎯 實驗步驟</h3>
+  </div>
+  <ol class="steps">
+    <li class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>重複 Part A 遠場繞射光路，用小彈簧取代孔徑</strong>
+        <p>將小彈簧放置在光路箭頭處（spatial filter 後，lens 前）。觀察屏幕上出現的 X 字型繞射條紋，且沿亮線分布有規律排列的亮點。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>量測繞射圖形，推算幾何結構</strong>
+        <p>量取兩條斜向繞射亮帶之夾角 2α（α 為螺距角），並依參考資料說明，由繞射圖樣中亮點間距、極小值位置推算彈簧之線材厚度與螺距。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>與游標卡尺直接量測比較</strong>
+        <p>用直尺或游標卡尺直接測量小彈簧的螺距 P、線徑 a、半徑 R，與步驟 2 由繞射推算的數值比較，評估誤差。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>（Optional）電腦模擬 DNA 繞射圖形</strong>
+        <p>使用程式模擬畫出 DNA 的理論繞射圖形，與實際觀察比較。</p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="card">
+    <div class="card-title">小彈簧繞射圖樣特徵</div>
+    <p style="font-size:0.88rem; color:var(--text-dim)">除中央主極大外，沿對角線方向延伸出明顯的 X 形亮線。這是螺旋結構在頻域中的特徵繞射圖樣，與真實 DNA X-ray 繞射所見的「Photo 51」拓樸相同。</p>
+  </div>
+
+  <div class="card" style="margin-top:1.2rem">
+    <div class="card-title">繞射圖樣視覺化 — 物體 vs 屏幕</div>
+    <div class="diff-gallery" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+
+      <!-- Helix object -->
+      <div class="diff-card">
+        <div class="diff-svg-box" style="aspect-ratio: 1 / 1;">
+          <svg viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#000"/>
+            <!-- Helix coils (spring side view) -->
+            <g stroke="#059669" stroke-width="1.2" fill="none" opacity="0.95">
+              <path d="M 30 15 Q 50 20 70 15"/>
+              <path d="M 70 15 Q 50 22 30 27"/>
+              <path d="M 30 27 Q 50 32 70 27"/>
+              <path d="M 70 27 Q 50 34 30 39"/>
+              <path d="M 30 39 Q 50 44 70 39"/>
+              <path d="M 70 39 Q 50 46 30 51"/>
+              <path d="M 30 51 Q 50 56 70 51"/>
+              <path d="M 70 51 Q 50 58 30 63"/>
+              <path d="M 30 63 Q 50 68 70 63"/>
+              <path d="M 70 63 Q 50 70 30 75"/>
+              <path d="M 30 75 Q 50 80 70 75"/>
+              <path d="M 70 75 Q 50 82 30 87"/>
+            </g>
+            <!-- Pitch arrow -->
+            <g stroke="#d97706" stroke-width="0.7" fill="#d97706">
+              <line x1="78" y1="27" x2="78" y2="39"/>
+              <path d="M 76 29 L 78 27 L 80 29"/>
+              <path d="M 76 37 L 78 39 L 80 37"/>
+              <text x="82" y="36" font-size="6" font-family="JetBrains Mono">P</text>
+            </g>
+          </svg>
+        </div>
+        <h5>物體：小彈簧（螺旋）</h5>
+        <p>螺距 P，pitch angle α</p>
+      </div>
+
+      <!-- X-shape diffraction pattern - simplified -->
+      <div class="diff-card">
+        <div class="diff-svg-box" style="aspect-ratio: 1 / 1;">
+          <svg viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#000"/>
+
+            <!-- Faint reddish background haze around center -->
+            <radialGradient id="springGlow" cx="50%" cy="50%">
+              <stop offset="0%" stop-color="#ff6b6b" stop-opacity="0.55"/>
+              <stop offset="20%" stop-color="#ff6b6b" stop-opacity="0.18"/>
+              <stop offset="60%" stop-color="#660000" stop-opacity="0.05"/>
+              <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+            </radialGradient>
+            <circle cx="50" cy="50" r="50" fill="url(#springGlow)"/>
+
+            <!-- Two diagonal X-rays as bright streaks -->
+            <g stroke="#ff6b6b" stroke-width="0.8" opacity="0.9">
+              <line x1="8" y1="2" x2="92" y2="98"/>
+              <line x1="92" y1="2" x2="8" y2="98"/>
+            </g>
+            <!-- Wider faint extension -->
+            <g stroke="#ff6b6b" stroke-width="2" opacity="0.2">
+              <line x1="8" y1="2" x2="92" y2="98"/>
+              <line x1="92" y1="2" x2="8" y2="98"/>
+            </g>
+
+            <!-- Bright central core (overexposed zero-order) -->
+            <circle cx="50" cy="50" r="3" fill="#ffffff"/>
+            <circle cx="50" cy="50" r="5" fill="#ffe8e8" opacity="0.7"/>
+            <circle cx="50" cy="50" r="9" fill="#ff8888" opacity="0.4"/>
+            <circle cx="50" cy="50" r="14" fill="#ff6b6b" opacity="0.2"/>
+          </svg>
+        </div>
+        <h5>屏幕：X 形繞射圖樣</h5>
+        <p>中央極亮 + 兩條斜向繞射射線</p>
+      </div>
+    </div>
+    <p class="table-note">螺旋結構在頻域中產生 X 形繞射，是螺旋繞射的標誌性特徵。</p>
+  </div>
+
+  <div class="card" style="margin-top:1.5rem">
+    <div class="card-title">Part B 數據記錄表（範例）</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>物理量</th><th>符號</th><th>量測值（繞射推算）</th></tr></thead>
+        <tbody>
+          <tr><td class="label">pitch angle</td><td>α</td><td>19.0°</td></tr>
+          <tr><td class="label">光柵常數</td><td>d</td><td>0.139 mm</td></tr>
+          <tr><td class="label">螺距</td><td>P</td><td>0.147 mm</td></tr>
+          <tr><td class="label">螺旋半徑</td><td>R</td><td>0.068 mm</td></tr>
+          <tr><td class="label">線材厚度</td><td>a</td><td>0.173 mm</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">* 量測距離 D = 1.095 m，雷射波長 λ = 632.8 nm。線材厚度直接量測與繞射推算之差異約 30%，可能來源：(1) 屏幕上圖樣量測精度不足，或 (2) 真實線徑量測誤差。</p>
+  </div>
+</div>
+
+<!-- ════════════ PART C ════════════ -->
+<div id="partC" class="section">
+  <div class="sec-head">
+    <div class="sec-icon" style="background:rgba(5,150,105,0.12);">🔭</div>
+    <div>
+      <h2>Part C：傅氏光學實驗</h2>
+      <p>透鏡將遠場繞射理解為傅立葉轉換</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">核心原理</div>
+    <p>本實驗的核心是 <strong>Abbe 雙重繞射成像</strong>：透鏡 L1 把物體的繞射光在後焦面（PL2）上組成<strong class="hl-gold">空間頻譜</strong>（傅氏轉換）；L2 再把這個頻譜逆向變回實空間影像（PL3）。</p>
+    <ul>
+      <li><strong class="hl-green">L1（傅氏轉換透鏡）</strong>：物體放在 L1 前焦面（距 L1 = f₁），L1 後焦面 = <strong>傅氏平面 PL2</strong></li>
+      <li><strong class="hl-purple">L2（反傅氏轉換透鏡）</strong>：距 L1 = f₁ + f₂，L2 後焦面 = 還原影像平面 PL3</li>
+      <li>實驗室透鏡焦距：<strong>f₁ = f₂ = 10 cm</strong>。L1 ↔ L2 距離固定 <strong>20 cm</strong>，物體距 L1 為 <strong>10 cm</strong>，屏幕距 L2 也是 <strong>10 cm</strong>。</li>
+    </ul>
+    <p style="margin-top:0.5rem">傅氏平面上：靠近中心 → 低空間頻率（物體粗大、整體輪廓）；遠離中心 → 高空間頻率（細節、邊緣、密集週期）。</p>
+    <div class="formula-box">
+      U<sub>f</sub>(f<sub>x</sub>, f<sub>y</sub>) ∝ ∬ U(x,y) · e<sup>−i2π(f<sub>x</sub>x + f<sub>y</sub>y)</sup> dx dy
+      <small>f<sub>x</sub> = x<sub>f</sub> / (λf)，傅氏平面上的位置 ↔ 物體的空間頻率</small>
+    </div>
+  </div>
+
+  <div class="part-header">
+    <h3>🎯 光路架設（圖 8-2 / 4f 系統）</h3>
+    <p>從左到右依序：Laser → Spatial Filter → 物體 → L1 → 傅氏平面 → L2 → 屏幕</p>
+  </div>
+
+  <div class="setup-diagram">
+    <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="100" x2="680" y2="100" stroke="#0284c7" stroke-width="1" stroke-dasharray="2,3" opacity="0.5"/>
+
+      <rect x="20" y="80" width="60" height="40" rx="3" fill="#f1f5f9" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="50" y="106" text-anchor="middle" fill="#1e293b" font-size="9" font-family="JetBrains Mono">Laser</text>
+
+      <line x1="80" y1="100" x2="120" y2="100" stroke="#dc2626" stroke-width="1.5"/>
+
+      <g>
+        <ellipse cx="130" cy="100" rx="5" ry="20" fill="rgba(2,132,199,0.15)" stroke="#0284c7" stroke-width="1.2"/>
+        <line x1="155" y1="80" x2="155" y2="95" stroke="#94a3b8" stroke-width="1.5"/>
+        <line x1="155" y1="105" x2="155" y2="120" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="142" y="148" text-anchor="middle" fill="#475569" font-size="8" font-family="JetBrains Mono">Spatial Filter</text>
+      </g>
+
+      <line x1="155" y1="100" x2="220" y2="65" stroke="#d97706" stroke-width="0.6" opacity="0.5"/>
+      <line x1="155" y1="100" x2="220" y2="135" stroke="#d97706" stroke-width="0.6" opacity="0.5"/>
+
+      <g>
+        <rect x="220" y="60" width="6" height="80" fill="#f1f5f9" stroke="#059669" stroke-width="1.2"/>
+        <line x1="220" y1="70" x2="226" y2="70" stroke="#059669" stroke-width="0.4"/>
+        <line x1="220" y1="80" x2="226" y2="80" stroke="#059669" stroke-width="0.4"/>
+        <line x1="220" y1="90" x2="226" y2="90" stroke="#059669" stroke-width="0.4"/>
+        <line x1="220" y1="110" x2="226" y2="110" stroke="#059669" stroke-width="0.4"/>
+        <line x1="220" y1="120" x2="226" y2="120" stroke="#059669" stroke-width="0.4"/>
+        <line x1="220" y1="130" x2="226" y2="130" stroke="#059669" stroke-width="0.4"/>
+        <text x="223" y="52" text-anchor="middle" fill="#059669" font-size="8" font-family="JetBrains Mono">物體 t(x,y)</text>
+        <text x="223" y="155" text-anchor="middle" fill="#059669" font-size="7" font-family="JetBrains Mono">mesh / gauze</text>
+      </g>
+
+      <line x1="226" y1="100" x2="320" y2="100" stroke="#d97706" stroke-width="0.6" opacity="0.4"/>
+      <line x1="226" y1="100" x2="320" y2="75" stroke="#d97706" stroke-width="0.5" opacity="0.4"/>
+      <line x1="226" y1="100" x2="320" y2="125" stroke="#d97706" stroke-width="0.5" opacity="0.4"/>
+
+      <g>
+        <ellipse cx="325" cy="100" rx="7" ry="35" fill="rgba(2,132,199,0.2)" stroke="#0284c7" stroke-width="1.5"/>
+        <text x="325" y="50" text-anchor="middle" fill="#0284c7" font-size="10" font-family="JetBrains Mono" font-weight="bold">L₁</text>
+        <text x="325" y="160" text-anchor="middle" fill="#0284c7" font-size="7" font-family="JetBrains Mono">傅氏轉換透鏡</text>
+        <text x="325" y="170" text-anchor="middle" fill="#0284c7" font-size="7" font-family="JetBrains Mono">f₁ = 10 cm</text>
+      </g>
+
+      <line x1="325" y1="65" x2="430" y2="100" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+      <line x1="325" y1="135" x2="430" y2="100" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+      <line x1="325" y1="100" x2="430" y2="100" stroke="#7c3aed" stroke-width="0.5" opacity="0.5" stroke-dasharray="2,2"/>
+
+      <g>
+        <line x1="430" y1="50" x2="430" y2="150" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2" opacity="0.7"/>
+        <text x="430" y="42" text-anchor="middle" fill="#d97706" font-size="9" font-family="JetBrains Mono" font-weight="bold">PL2 傅氏平面</text>
+        <circle cx="430" cy="100" r="3" fill="#d97706"/>
+        <circle cx="430" cy="88" r="1.8" fill="#d97706" opacity="0.7"/>
+        <circle cx="430" cy="112" r="1.8" fill="#d97706" opacity="0.7"/>
+        <circle cx="430" cy="78" r="1.2" fill="#d97706" opacity="0.5"/>
+        <circle cx="430" cy="122" r="1.2" fill="#d97706" opacity="0.5"/>
+      </g>
+
+      <line x1="430" y1="100" x2="535" y2="65" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+      <line x1="430" y1="100" x2="535" y2="135" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+
+      <g>
+        <ellipse cx="540" cy="100" rx="7" ry="35" fill="rgba(124,58,237,0.2)" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="540" y="50" text-anchor="middle" fill="#7c3aed" font-size="10" font-family="JetBrains Mono" font-weight="bold">L₂</text>
+        <text x="540" y="160" text-anchor="middle" fill="#7c3aed" font-size="7" font-family="JetBrains Mono">反傅氏轉換</text>
+        <text x="540" y="170" text-anchor="middle" fill="#7c3aed" font-size="7" font-family="JetBrains Mono">f₂ = 10 cm</text>
+      </g>
+
+      <line x1="540" y1="65" x2="640" y2="100" stroke="#059669" stroke-width="0.6" opacity="0.6"/>
+      <line x1="540" y1="135" x2="640" y2="100" stroke="#059669" stroke-width="0.6" opacity="0.6"/>
+
+      <g>
+        <rect x="640" y="60" width="6" height="80" fill="#f1f5f9" stroke="#059669" stroke-width="1.5"/>
+        <text x="643" y="50" text-anchor="middle" fill="#059669" font-size="9" font-family="JetBrains Mono">Screen</text>
+        <text x="643" y="155" text-anchor="middle" fill="#059669" font-size="7" font-family="JetBrains Mono">PL3 還原影像</text>
+        <line x1="640" y1="70" x2="646" y2="70" stroke="#059669" stroke-width="0.4"/>
+        <line x1="640" y1="80" x2="646" y2="80" stroke="#059669" stroke-width="0.4"/>
+        <line x1="640" y1="100" x2="646" y2="100" stroke="#059669" stroke-width="0.4"/>
+        <line x1="640" y1="120" x2="646" y2="120" stroke="#059669" stroke-width="0.4"/>
+        <line x1="640" y1="130" x2="646" y2="130" stroke="#059669" stroke-width="0.4"/>
+      </g>
+
+      <g>
+        <line x1="226" y1="185" x2="325" y2="185" stroke="#94a3b8" stroke-width="0.6"/>
+        <line x1="325" y1="185" x2="430" y2="185" stroke="#94a3b8" stroke-width="0.6"/>
+        <line x1="430" y1="185" x2="540" y2="185" stroke="#94a3b8" stroke-width="0.6"/>
+        <line x1="540" y1="185" x2="643" y2="185" stroke="#94a3b8" stroke-width="0.6"/>
+        <line x1="226" y1="182" x2="226" y2="188" stroke="#94a3b8"/>
+        <line x1="325" y1="182" x2="325" y2="188" stroke="#94a3b8"/>
+        <line x1="430" y1="182" x2="430" y2="188" stroke="#94a3b8"/>
+        <line x1="540" y1="182" x2="540" y2="188" stroke="#94a3b8"/>
+        <line x1="643" y1="182" x2="643" y2="188" stroke="#94a3b8"/>
+        <text x="275" y="195" text-anchor="middle" fill="#475569" font-size="8" font-family="JetBrains Mono">10 cm</text>
+        <text x="377" y="195" text-anchor="middle" fill="#d97706" font-size="8" font-family="JetBrains Mono">10 cm</text>
+        <text x="485" y="195" text-anchor="middle" fill="#7c3aed" font-size="8" font-family="JetBrains Mono">10 cm</text>
+        <text x="590" y="195" text-anchor="middle" fill="#059669" font-size="8" font-family="JetBrains Mono">10 cm</text>
+      </g>
+    </svg>
+    <div class="setup-caption">圖 8-2：<strong>傅氏光學完整光路 (4f system)</strong> — 物體在 L1 前焦面，L2 距 L1 共 20 cm，屏幕在 L2 後焦面（最右側）</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚙️ 元件擺位口訣（學生最常問）</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>元件</th><th>位置</th><th>怎麼分辨？</th></tr></thead>
+        <tbody>
+          <tr><td class="label">物體</td><td>L1 前 10 cm</td><td>放粗/細方格時要垂直入射，避免歪斜</td></tr>
+          <tr><td class="label">L1（傅氏轉換）</td><td>物體後 10 cm</td><td rowspan="2" style="vertical-align:middle">兩片透鏡長得一樣！只能<strong style="color:var(--accent)">用順序分</strong>：靠近物體那片 = L1，靠近屏幕那片 = L2</td></tr>
+          <tr><td class="label">L2（反傅氏轉換）</td><td>L1 後 20 cm</td></tr>
+          <tr><td class="label">PL2 傅氏平面</td><td>L1 後 10 cm（剛好夾在 L1 與 L2 中間）</td><td>濾片要放這裡（見 Part D）；現在只是「概念位置」，不放東西</td></tr>
+          <tr><td class="label">屏幕（PL3）</td><td>L2 後約 10 cm（最右側）</td><td>影像不清楚時，<strong>只前後微調屏幕</strong>，不要動 L1/L2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">系統別名「4f system」的由來：總長 = f + f + f + f = 4f = 40 cm（物體到屏幕）。</p>
+  </div>
+
+  <ol class="steps">
+    <li class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>先只放 L1，觀察傅氏平面上的頻譜</strong>
+        <p><strong>怎麼做：</strong>把 L2 拿開。放上粗方格（target mesh）為物體，L1 距物體 10 cm，屏幕暫時放在 L1 後 10 cm 處（這個位置就是 PL2 傅氏平面）。<br>
+        <strong>看什麼：</strong>屏幕上應該出現<strong>二維點陣</strong> — 很多紅色亮點排成水平＋垂直格子狀，中心最亮、向外遞減。這就是物體的<strong class="hl-gold">空間頻譜</strong>。<br>
+        <strong>為什麼這樣做：</strong>先驗證 L1 對準光軸、物體垂直、頻譜清楚成形，再放 L2，才不會把對準問題與成像問題疊在一起難以排查。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>換成細方格 (fine gauze)，比較兩種頻譜</strong>
+        <p><strong>看什麼：</strong>粗方格 → 點陣密集、集中於中心；細方格 → 點陣間距變大、亮點延展到外圍十字方向。<br>
+        <strong>為什麼：</strong>頻譜亮點位置 x<sub>f</sub> = λ·f / d，與物體週期 d <strong>成反比</strong>。粗方格 d 大 → x<sub>f</sub> 小；細方格 d 小 → x<sub>f</sub> 大。<br>
+        <strong>拍照重點：</strong>同一張屏幕、同一個距離下拍兩張頻譜圖對照，學生才看得出間距差異。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>放入 L2 做反傅氏轉換，重建影像</strong>
+        <p><strong>怎麼做：</strong>把屏幕往後移開，在 L1 後 20 cm 處插入 L2（也就是 L1 與 L2 之間距離 = 20 cm = f₁ + f₂）。屏幕繼續往後移到 L2 後約 10 cm，前後微調直到重建影像最清楚。<br>
+        <strong>看什麼：</strong>屏幕上應該重現出原始方格圖案（亮暗格子）。如果只看到一團紅光、沒有方格結構 → 微調屏幕位置即可。<br>
+        <strong>常見卡點：</strong>
+        <ul style="margin-top:0.3rem; padding-left:1.2rem">
+          <li>L1 ↔ L2 距離 ≠ 20 cm → 影像永遠模糊（這個距離是<strong>固定的</strong>，不能調）</li>
+          <li>物體沒有在 L1 前焦面 10 cm 處 → 重建影像殘留繞射條紋、邊緣不純</li>
+          <li>屏幕太遠 → 影像放大但散開；太近 → 縮小、邊緣不清</li>
+          <li>方格陣列歪斜放置 → 重建影像方格也跟著轉</li>
+        </ul></p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>記錄重建影像的失真</strong>
+        <p><strong>看什麼：</strong>重建影像與原物體相比，<strong>邊緣比較不銳利、對比度下降、細節變模糊</strong>。<br>
+        <strong>為什麼（學生會問）：</strong>L2 的孔徑（透鏡邊界）有限，會切掉繞射角太大的高頻成分。原物體的銳利邊緣 = 高頻訊號 → 高頻被截斷 → 邊緣平滑化。這是光學的本質極限（Optical resolution limit），不是儀器沒調好。<br>
+        <strong>觀察比較：</strong>細方格的失真比粗方格更嚴重 — 因為細方格本身就含更多高頻成分，被切掉的比例更大（這正是問題討論 Q5 要回答的）。</p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="card">
+    <div class="card-title">Fine Gauze 的傅氏圖樣特徵</div>
+    <p style="font-size:0.88rem; color:var(--text-dim)">fine gauze 是<strong style="color:var(--text)">二維週期結構</strong>（x、y 方向都有週期性的紗網），可視為兩個正交的一維光柵相乘。在傅氏平面上呈現<strong style="color:var(--text)">水平 + 垂直十字亮點陣</strong>，中心最亮、向外遞減。亮點間距由紗網週期決定。</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">粗 vs 細方格陣列比較</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>特性</th><th>粗方格 (Target Mesh)</th><th>細方格 (Fine Gauze)</th></tr></thead>
+        <tbody>
+          <tr><td class="label">實空間週期 d</td><td>大（粗）</td><td>小（細）</td></tr>
+          <tr><td class="label">主要空間頻率</td><td>低</td><td>高</td></tr>
+          <tr><td class="label">傅氏平面亮點間距</td><td>小（密集集中於中心）</td><td>大（外展）</td></tr>
+          <tr><td class="label">傅氏平面亮點數量</td><td>少（外圍快速衰減）</td><td>多（高階亮點明顯）</td></tr>
+          <tr><td class="label">反傅氏重建失真</td><td>較小（低頻能完整通過 L2）</td><td>較大（高頻被 L2 孔徑截斷）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">關鍵公式：傅氏亮點位置 x<sub>f</sub> = λ·f / d。代入 λ = 633 nm、f = 10 cm，從拍照量到的亮點間距即可反推物體週期 d。</p>
+  </div>
+
+  <div class="card" style="margin-top:1.2rem">
+    <div class="card-title">視覺化：粗方格 vs 細方格 — 物體與傅氏平面對應</div>
+    <div class="diff-gallery" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
+
+      <!-- Coarse mesh object -->
+      <div class="diff-card">
+        <div class="diff-svg-box" style="aspect-ratio: 1 / 1;">
+          <svg viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#f1f5f9"/>
+            <!-- Coarse grid: large period -->
+            <g stroke="#059669" stroke-width="2" fill="none">
+              <line x1="0" y1="20" x2="100" y2="20"/>
+              <line x1="0" y1="50" x2="100" y2="50"/>
+              <line x1="0" y1="80" x2="100" y2="80"/>
+              <line x1="20" y1="0" x2="20" y2="100"/>
+              <line x1="50" y1="0" x2="50" y2="100"/>
+              <line x1="80" y1="0" x2="80" y2="100"/>
+            </g>
+          </svg>
+        </div>
+        <h5 style="color:var(--accent3)">① 粗方格物體</h5>
+        <p>大週期 d，低頻為主</p>
+      </div>
+
+      <!-- Coarse mesh Fourier - dense points near center, faint cross -->
+      <div class="diff-card">
+        <div class="diff-svg-box" style="aspect-ratio: 1 / 1;">
+          <svg viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#000"/>
+            <!-- Faint cross axes -->
+            <line x1="20" y1="50" x2="80" y2="50" stroke="#ff6b6b" stroke-width="0.6" opacity="0.4"/>
+            <line x1="50" y1="20" x2="50" y2="80" stroke="#ff6b6b" stroke-width="0.6" opacity="0.4"/>
+
+            <!-- Tightly packed dots near center -->
+            <g fill="#ff6b6b">
+              <circle cx="50" cy="50" r="3.5"/>
+              <circle cx="42" cy="50" r="2.2" opacity="0.9"/>
+              <circle cx="58" cy="50" r="2.2" opacity="0.9"/>
+              <circle cx="50" cy="42" r="2.2" opacity="0.9"/>
+              <circle cx="50" cy="58" r="2.2" opacity="0.9"/>
+              <circle cx="42" cy="42" r="1.6" opacity="0.65"/>
+              <circle cx="58" cy="42" r="1.6" opacity="0.65"/>
+              <circle cx="42" cy="58" r="1.6" opacity="0.65"/>
+              <circle cx="58" cy="58" r="1.6" opacity="0.65"/>
+              <circle cx="34" cy="50" r="1.4" opacity="0.55"/>
+              <circle cx="66" cy="50" r="1.4" opacity="0.55"/>
+              <circle cx="50" cy="34" r="1.4" opacity="0.55"/>
+              <circle cx="50" cy="66" r="1.4" opacity="0.55"/>
+              <circle cx="34" cy="42" r="1.0" opacity="0.4"/>
+              <circle cx="66" cy="42" r="1.0" opacity="0.4"/>
+              <circle cx="34" cy="58" r="1.0" opacity="0.4"/>
+              <circle cx="66" cy="58" r="1.0" opacity="0.4"/>
+              <circle cx="42" cy="34" r="1.0" opacity="0.4"/>
+              <circle cx="58" cy="34" r="1.0" opacity="0.4"/>
+              <circle cx="42" cy="66" r="1.0" opacity="0.4"/>
+              <circle cx="58" cy="66" r="1.0" opacity="0.4"/>
+            </g>
+          </svg>
+        </div>
+        <h5 style="color:var(--gold)">② 粗方格頻譜</h5>
+        <p>密集點陣集中於中心區域</p>
+      </div>
+
+      <!-- Fine gauze object -->
+      <div class="diff-card">
+        <div class="diff-svg-box" style="aspect-ratio: 1 / 1;">
+          <svg viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#f1f5f9"/>
+            <!-- Fine grid: small period -->
+            <g stroke="#059669" stroke-width="0.8" fill="none">
+              <line x1="0" y1="10" x2="100" y2="10"/>
+              <line x1="0" y1="20" x2="100" y2="20"/>
+              <line x1="0" y1="30" x2="100" y2="30"/>
+              <line x1="0" y1="40" x2="100" y2="40"/>
+              <line x1="0" y1="50" x2="100" y2="50"/>
+              <line x1="0" y1="60" x2="100" y2="60"/>
+              <line x1="0" y1="70" x2="100" y2="70"/>
+              <line x1="0" y1="80" x2="100" y2="80"/>
+              <line x1="0" y1="90" x2="100" y2="90"/>
+              <line x1="10" y1="0" x2="10" y2="100"/>
+              <line x1="20" y1="0" x2="20" y2="100"/>
+              <line x1="30" y1="0" x2="30" y2="100"/>
+              <line x1="40" y1="0" x2="40" y2="100"/>
+              <line x1="50" y1="0" x2="50" y2="100"/>
+              <line x1="60" y1="0" x2="60" y2="100"/>
+              <line x1="70" y1="0" x2="70" y2="100"/>
+              <line x1="80" y1="0" x2="80" y2="100"/>
+              <line x1="90" y1="0" x2="90" y2="100"/>
+            </g>
+          </svg>
+        </div>
+        <h5 style="color:var(--accent3)">③ 細方格物體</h5>
+        <p>小週期 d，高頻為主</p>
+      </div>
+
+      <!-- Fine gauze Fourier - symmetric lattice with bright cross axes -->
+      <div class="diff-card">
+        <div class="diff-svg-box" style="aspect-ratio: 1 / 1;">
+          <svg viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#000"/>
+
+            <!-- Bright horizontal and vertical axes -->
+            <line x1="5" y1="50" x2="95" y2="50" stroke="#ff6b6b" stroke-width="1.2" opacity="0.85"/>
+            <line x1="50" y1="5" x2="50" y2="95" stroke="#ff6b6b" stroke-width="1.2" opacity="0.85"/>
+            <line x1="3" y1="50" x2="97" y2="50" stroke="#ff6b6b" stroke-width="2.5" opacity="0.25"/>
+            <line x1="50" y1="3" x2="50" y2="97" stroke="#ff6b6b" stroke-width="2.5" opacity="0.25"/>
+
+            <!-- Symmetric lattice points spread out -->
+            <g fill="#ff6b6b">
+              <circle cx="50" cy="50" r="3.5"/>
+              <circle cx="34" cy="50" r="2.2" opacity="0.9"/>
+              <circle cx="66" cy="50" r="2.2" opacity="0.9"/>
+              <circle cx="50" cy="34" r="2.2" opacity="0.9"/>
+              <circle cx="50" cy="66" r="2.2" opacity="0.9"/>
+              <circle cx="18" cy="50" r="1.4" opacity="0.6"/>
+              <circle cx="82" cy="50" r="1.4" opacity="0.6"/>
+              <circle cx="50" cy="18" r="1.4" opacity="0.6"/>
+              <circle cx="50" cy="82" r="1.4" opacity="0.6"/>
+              <circle cx="34" cy="34" r="1.4" opacity="0.55"/>
+              <circle cx="66" cy="34" r="1.4" opacity="0.55"/>
+              <circle cx="34" cy="66" r="1.4" opacity="0.55"/>
+              <circle cx="66" cy="66" r="1.4" opacity="0.55"/>
+            </g>
+          </svg>
+        </div>
+        <h5 style="color:var(--gold)">④ 細方格頻譜</h5>
+        <p>亮點向外展開，間距大</p>
+      </div>
+    </div>
+    <p class="table-note">物體越細密，傅氏平面亮點間距越大；物體越粗疏，亮點越集中。</p>
+  </div>
+</div>
+
+<!-- ════════════ PART D ════════════ -->
+<div id="partD" class="section">
+  <div class="sec-head">
+    <div class="sec-icon" style="background:rgba(217,119,6,0.12);">🎛️</div>
+    <div>
+      <h2>Part D：光學信號處理（空間濾波）</h2>
+      <p>在 Fourier Plane 加入濾波器，直接操控空間頻率</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">空間濾波原理</div>
+    <p>在 Fourier Plane 放置不同濾波元件，可以選擇性保留或去除特定空間頻率成分，進而改變重建影像的外觀。這是光學影像處理的基本操作。</p>
+  </div>
+
+  <div class="setup-diagram">
+    <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="100" x2="680" y2="100" stroke="#0284c7" stroke-width="1" stroke-dasharray="2,3" opacity="0.5"/>
+
+      <rect x="20" y="80" width="55" height="40" rx="3" fill="#f1f5f9" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="47" y="106" text-anchor="middle" fill="#1e293b" font-size="9" font-family="JetBrains Mono">Laser</text>
+
+      <line x1="75" y1="100" x2="115" y2="100" stroke="#dc2626" stroke-width="1.5"/>
+
+      <g>
+        <ellipse cx="125" cy="100" rx="5" ry="20" fill="rgba(2,132,199,0.15)" stroke="#0284c7" stroke-width="1.2"/>
+        <line x1="148" y1="80" x2="148" y2="95" stroke="#94a3b8" stroke-width="1.5"/>
+        <line x1="148" y1="105" x2="148" y2="120" stroke="#94a3b8" stroke-width="1.5"/>
+      </g>
+
+      <line x1="148" y1="100" x2="200" y2="65" stroke="#d97706" stroke-width="0.6" opacity="0.5"/>
+      <line x1="148" y1="100" x2="200" y2="135" stroke="#d97706" stroke-width="0.6" opacity="0.5"/>
+
+      <g>
+        <path d="M 200 38 L 200 56" stroke="#059669" stroke-width="1.5"/>
+        <path d="M 196 50 L 200 56 L 204 50" fill="none" stroke="#059669" stroke-width="1.5"/>
+        <text x="200" y="34" text-anchor="middle" fill="#059669" font-size="8" font-family="JetBrains Mono">放置物體</text>
+      </g>
+
+      <rect x="197" y="60" width="6" height="80" fill="#f1f5f9" stroke="#059669" stroke-width="1.2"/>
+      <line x1="197" y1="72" x2="203" y2="72" stroke="#059669" stroke-width="0.5"/>
+      <line x1="197" y1="85" x2="203" y2="85" stroke="#059669" stroke-width="0.5"/>
+      <line x1="197" y1="115" x2="203" y2="115" stroke="#059669" stroke-width="0.5"/>
+      <line x1="197" y1="128" x2="203" y2="128" stroke="#059669" stroke-width="0.5"/>
+      <text x="200" y="155" text-anchor="middle" fill="#059669" font-size="7" font-family="JetBrains Mono">fine gauze</text>
+      <text x="200" y="165" text-anchor="middle" fill="#059669" font-size="7" font-family="JetBrains Mono">/ 字母卡</text>
+
+      <line x1="203" y1="100" x2="290" y2="100" stroke="#d97706" stroke-width="0.5" opacity="0.4"/>
+      <line x1="203" y1="100" x2="290" y2="78" stroke="#d97706" stroke-width="0.5" opacity="0.4"/>
+      <line x1="203" y1="100" x2="290" y2="122" stroke="#d97706" stroke-width="0.5" opacity="0.4"/>
+
+      <g>
+        <ellipse cx="295" cy="100" rx="6" ry="32" fill="rgba(2,132,199,0.2)" stroke="#0284c7" stroke-width="1.5"/>
+        <text x="295" y="58" text-anchor="middle" fill="#0284c7" font-size="10" font-family="JetBrains Mono" font-weight="bold">L₁</text>
+      </g>
+
+      <line x1="295" y1="68" x2="395" y2="100" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+      <line x1="295" y1="132" x2="395" y2="100" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+
+      <g>
+        <rect x="380" y="55" width="30" height="90" fill="rgba(217,119,6,0.08)" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="395" y="48" text-anchor="middle" fill="#d97706" font-size="9" font-family="JetBrains Mono" font-weight="bold">Fourier Plane</text>
+
+        <circle cx="395" cy="100" r="6" fill="#cbd5e1" stroke="#dc2626" stroke-width="1"/>
+        <text x="395" y="103" text-anchor="middle" fill="#dc2626" font-size="7" font-family="JetBrains Mono" font-weight="bold">·</text>
+
+        <circle cx="395" cy="80" r="1.5" fill="#d97706"/>
+        <circle cx="395" cy="120" r="1.5" fill="#d97706"/>
+        <circle cx="385" cy="100" r="1.2" fill="#d97706" opacity="0.7"/>
+        <circle cx="405" cy="100" r="1.2" fill="#d97706" opacity="0.7"/>
+
+        <text x="395" y="170" text-anchor="middle" fill="#dc2626" font-size="7" font-family="JetBrains Mono">高通濾片</text>
+        <text x="395" y="180" text-anchor="middle" fill="#475569" font-size="7" font-family="JetBrains Mono">(或低通/狹縫)</text>
+      </g>
+
+      <line x1="410" y1="100" x2="510" y2="68" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+      <line x1="410" y1="100" x2="510" y2="132" stroke="#7c3aed" stroke-width="0.6" opacity="0.6"/>
+
+      <g>
+        <ellipse cx="515" cy="100" rx="6" ry="32" fill="rgba(124,58,237,0.2)" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="515" y="58" text-anchor="middle" fill="#7c3aed" font-size="10" font-family="JetBrains Mono" font-weight="bold">L₂</text>
+      </g>
+
+      <line x1="515" y1="68" x2="630" y2="100" stroke="#059669" stroke-width="0.6" opacity="0.6"/>
+      <line x1="515" y1="132" x2="630" y2="100" stroke="#059669" stroke-width="0.6" opacity="0.6"/>
+
+      <g>
+        <rect x="630" y="60" width="6" height="80" fill="#f1f5f9" stroke="#059669" stroke-width="1.5"/>
+        <text x="633" y="50" text-anchor="middle" fill="#059669" font-size="9" font-family="JetBrains Mono">Screen</text>
+        <line x1="630" y1="68" x2="636" y2="68" stroke="#059669" stroke-width="0.6"/>
+        <line x1="630" y1="132" x2="636" y2="132" stroke="#059669" stroke-width="0.6"/>
+        <text x="633" y="155" text-anchor="middle" fill="#059669" font-size="7" font-family="JetBrains Mono">濾波後影像</text>
+      </g>
+    </svg>
+    <div class="setup-caption">圖 8-3：<strong>空間濾波光路</strong> — 在 Fourier Plane 放入濾波元件（高通／低通／狹縫），改變重建影像</div>
+  </div>
+
+  <div class="part-header">
+    <h3>🎯 D-1：方向性濾波（狹縫）</h3>
+  </div>
+  <ol class="steps">
+    <li class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>以 fine gauze 為物體</strong>
+        <p>在 Fourier Plane 上可觀察到二維點陣分布（對應 2D 週期結構的頻譜）。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>放入可調寬度狹縫</strong>
+        <p>在 Fourier Plane 放入可調狹縫，只讓某一方向的部分繞射點通過，遮擋其他方向。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>觀察：2D 光柵 → 1D 光柵</strong>
+        <p>重建影像將由原本的二維週期結構變為單一方向的一維週期結構。</p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="part-header">
+    <h3>🎯 D-2：高通濾波（High-Pass Filter）</h3>
+  </div>
+  <ol class="steps">
+    <li class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>改用較大孔徑物體（打孔卡片或英文字母）</strong>
+        <p>在 Fourier Plane 加入高通濾波器（擋住中心低頻，讓高頻通過）。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>觀察：輪廓強調效果</strong>
+        <p>低頻被遮擋，重建影像強調輪廓與邊界（邊緣增強，類似影像銳化）。</p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="part-header">
+    <h3>🎯 D-3：低通濾波（Low-Pass Filter）</h3>
+  </div>
+  <ol class="steps">
+    <li class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>換成低通濾波器</strong>
+        <p>在 Fourier Plane 改用低通濾波器（只讓中心低頻通過，遮擋高頻）。</p>
+      </div>
+    </li>
+    <li class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>觀察：平滑化效果</strong>
+        <p>高頻被遮擋，重建影像邊界模糊、細節消失（類似影像模糊化）。</p>
+      </div>
+    </li>
+  </ol>
+
+  <!-- Slit rotation visualization -->
+  <div class="card" style="margin-top:1.2rem">
+    <div class="card-title">視覺化 1 — 狹縫旋轉時繞射方向的變化</div>
+    <div class="diff-gallery" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
+
+      <!-- Horizontal slit -> vertical fringes -->
+      <div class="diff-card">
+        <div class="diff-svg-box" style="aspect-ratio: 1.4 / 1;">
+          <svg viewBox="0 0 100 70">
+            <rect width="100" height="70" fill="#000"/>
+            <g transform="translate(50 35)">
+              <ellipse cx="0" cy="0" rx="2.5" ry="22" fill="#ff6b6b"/>
+              <ellipse cx="-7" cy="0" rx="1.5" ry="14" fill="#ff6b6b" opacity="0.5"/>
+              <ellipse cx="7" cy="0" rx="1.5" ry="14" fill="#ff6b6b" opacity="0.5"/>
+              <ellipse cx="-14" cy="0" rx="1.2" ry="9" fill="#ff6b6b" opacity="0.25"/>
+              <ellipse cx="14" cy="0" rx="1.2" ry="9" fill="#ff6b6b" opacity="0.25"/>
+            </g>
+          </svg>
+        </div>
+        <h5>水平狹縫 ─</h5>
+        <p>垂直亮帶</p>
+      </div>
+
+      <!-- 45° slit -->
+      <div class="diff-card">
+        <div class="diff-svg-box" style="aspect-ratio: 1.4 / 1;">
+          <svg viewBox="0 0 100 70">
+            <rect width="100" height="70" fill="#000"/>
+            <g transform="translate(50 35) rotate(-45)">
+              <ellipse cx="0" cy="0" rx="2.5" ry="22" fill="#ff6b6b"/>
+              <ellipse cx="-7" cy="0" rx="1.5" ry="14" fill="#ff6b6b" opacity="0.5"/>
+              <ellipse cx="7" cy="0" rx="1.5" ry="14" fill="#ff6b6b" opacity="0.5"/>
+              <ellipse cx="-14" cy="0" rx="1.2" ry="9" fill="#ff6b6b" opacity="0.25"/>
+              <ellipse cx="14" cy="0" rx="1.2" ry="9" fill="#ff6b6b" opacity="0.25"/>
+            </g>
+          </svg>
+        </div>
+        <h5>45° 斜狹縫 ╱</h5>
+        <p>條紋整體旋轉 45°</p>
+      </div>
+
+      <!-- Vertical slit -> horizontal fringes -->
+      <div class="diff-card">
+        <div class="diff-svg-box" style="aspect-ratio: 1.4 / 1;">
+          <svg viewBox="0 0 100 70">
+            <rect width="100" height="70" fill="#000"/>
+            <g transform="translate(50 35)">
+              <ellipse cx="0" cy="0" rx="32" ry="2.5" fill="#ff6b6b"/>
+              <ellipse cx="0" cy="-7" rx="22" ry="1.5" fill="#ff6b6b" opacity="0.5"/>
+              <ellipse cx="0" cy="7" rx="22" ry="1.5" fill="#ff6b6b" opacity="0.5"/>
+              <ellipse cx="0" cy="-14" rx="14" ry="1.2" fill="#ff6b6b" opacity="0.25"/>
+              <ellipse cx="0" cy="14" rx="14" ry="1.2" fill="#ff6b6b" opacity="0.25"/>
+            </g>
+          </svg>
+        </div>
+        <h5>垂直狹縫 │</h5>
+        <p>水平亮帶</p>
+      </div>
+    </div>
+    <p class="table-note">繞射條紋方向永遠垂直於狹縫方向。</p>
+  </div>
+
+  <!-- Rectangular aperture + high-pass result -->
+  <div class="card" style="margin-top:1.2rem">
+    <div class="card-title">視覺化 2 — 長方形開口 + 高通濾波</div>
+    <div class="diff-gallery" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+
+      <!-- Original rectangular aperture -->
+      <div class="diff-card">
+        <div class="diff-svg-box" style="aspect-ratio: 1.3 / 1;">
+          <svg viewBox="0 0 130 100">
+            <rect width="130" height="100" fill="#f1f5f9"/>
+            <rect x="40" y="35" width="50" height="30" fill="#059669"/>
+          </svg>
+        </div>
+        <h5 style="color:var(--accent3)">物平面：長方形開口</h5>
+        <p>物體幾何 → 中央亮區為主</p>
+      </div>
+
+      <!-- High-pass filtered result: small red region in dark field -->
+      <div class="diff-card">
+        <div class="diff-svg-box" style="aspect-ratio: 1.3 / 1;">
+          <svg viewBox="0 0 130 100">
+            <rect width="130" height="100" fill="#000"/>
+            <!-- Faint outer halo -->
+            <ellipse cx="65" cy="50" rx="13" ry="6" fill="#ff6b6b" opacity="0.15"/>
+            <!-- Main residual red region -->
+            <rect x="55" y="46" width="20" height="9" rx="1" fill="#cc3030" opacity="0.85"/>
+            <rect x="56" y="46" width="18" height="2" fill="#ff6b6b" opacity="0.85"/>
+          </svg>
+        </div>
+        <h5 style="color:var(--gold)">屏幕：高通濾波後</h5>
+        <p>本體中心被遮，僅剩邊界處的高頻邊緣光殘留</p>
+      </div>
+    </div>
+    <p class="table-note">高通濾片擋住中心低頻分量後，本體平緩透光的部分被濾除，屏幕上僅殘留邊界處的高頻成分。</p>
+  </div>
+
+  <div class="card" style="margin-top:1.5rem">
+    <div class="card-title">三種濾波效果比較</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>濾波類型</th><th>保留頻率</th><th>遮擋頻率</th><th>影像效果</th><th>應用</th></tr></thead>
+        <tbody>
+          <tr><td class="label">無濾波</td><td>全部</td><td>無</td><td>原始重建（有些失真）</td><td>—</td></tr>
+          <tr><td class="label">Low-Pass（低通）</td><td>低頻（中心）</td><td>高頻（邊緣）</td><td>平滑、邊界模糊</td><td>去除雜訊</td></tr>
+          <tr><td class="label">High-Pass（高通）</td><td>高頻（邊緣）</td><td>低頻（中心）</td><td>強調輪廓、邊緣增強</td><td>邊緣偵測</td></tr>
+          <tr><td class="label">狹縫濾波</td><td>特定方向頻率</td><td>其他方向</td><td>2D → 1D 轉換</td><td>方向選擇</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ DATA ════════════ -->
+<div id="data" class="section">
+  <div class="sec-head">
+    <div class="sec-icon" style="background:rgba(5,150,105,0.12);">📊</div>
+    <div>
+      <h2>數據記錄表與互動圖表</h2>
+      <p>互動圖表說明空間頻率與繞射的關係</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Part A — Airy Disk 量測記錄（範例數據）</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>量測次數</th><th>L (mm)</th><th>r 中央亮斑半徑 (mm)</th><th>D 推算 (μm)</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>420</td><td>34.25</td><td>9.47</td></tr>
+          <tr><td>2</td><td>490</td><td>40.0</td><td>9.46</td></tr>
+          <tr><td>3</td><td>665</td><td>52.5</td><td>9.78</td></tr>
+          <tr><td><strong>平均</strong></td><td>—</td><td>—</td><td><strong>9.57 μm</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">λ = 633 nm，公式 D ≈ 1.22 λL/r。三組數據相對誤差 < 4%。</p>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">圓孔繞射強度分布（Airy Pattern）— 互動示意</div>
+    <canvas id="airyCanvas" height="220"></canvas>
+    <div style="display:flex;gap:1rem;margin-top:0.8rem;align-items:center;flex-wrap:wrap">
+      <label style="font-size:0.8rem;color:var(--text-dim)">孔徑 D (μm):
+        <input type="range" id="airyD" min="5" max="200" value="10" style="margin-left:0.4rem;accent-color:var(--accent)">
+        <span id="airyDval" style="color:var(--accent);font-family:'JetBrains Mono',monospace;margin-left:0.3rem">10</span>
+      </label>
+      <label style="font-size:0.8rem;color:var(--text-dim)">距離 L (m):
+        <input type="range" id="airyL" min="0.1" max="2" step="0.05" value="0.5" style="margin-left:0.4rem;accent-color:var(--accent)">
+        <span id="airyLval" style="color:var(--accent);font-family:'JetBrains Mono',monospace;margin-left:0.3rem">0.50</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">單狹縫 vs 多狹縫繞射強度比較</div>
+    <canvas id="slitCanvas" height="220"></canvas>
+    <div style="display:flex;gap:1rem;margin-top:0.8rem;align-items:center;flex-wrap:wrap">
+      <label style="font-size:0.8rem;color:var(--text-dim)">狹縫數 N:
+        <input type="range" id="slitN" min="1" max="10" value="1" style="margin-left:0.4rem;accent-color:var(--accent2)">
+        <span id="slitNval" style="color:var(--accent2);font-family:'JetBrains Mono',monospace;margin-left:0.3rem">1</span>
+      </label>
+    </div>
+    <p class="table-note">N=1 為單狹縫包絡；N=2 為雙狹縫干涉條紋受 sinc² 包絡調制；N≥6 條紋變得銳利且強度提升。</p>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">空間頻率示意：週期 → Fourier Plane 分布</div>
+    <canvas id="freqCanvas" height="180"></canvas>
+    <div style="display:flex;gap:1rem;margin-top:0.8rem;align-items:center;flex-wrap:wrap">
+      <label style="font-size:0.8rem;color:var(--text-dim)">方格週期 d (mm):
+        <input type="range" id="freqD" min="0.1" max="3" step="0.1" value="1" style="margin-left:0.4rem;accent-color:var(--accent3)">
+        <span id="freqDval" style="color:var(--accent3);font-family:'JetBrains Mono',monospace;margin-left:0.3rem">1.0</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Fresnel Number 快速查表（λ = 633 nm）</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>孔徑半徑 a (mm)</th><th>距離 L = 0.1 m</th><th>L = 0.5 m</th><th>L = 1.0 m</th><th>L = 2.0 m</th></tr></thead>
+        <tbody>
+          <tr><td class="label">0.5 mm</td><td>3.95</td><td>0.79</td><td>0.40</td><td>0.20</td></tr>
+          <tr><td class="label">1.0 mm</td><td>15.8</td><td>3.16</td><td>1.58</td><td>0.79</td></tr>
+          <tr><td class="label">2.0 mm</td><td>63.2</td><td>12.6</td><td>6.32</td><td>3.16</td></tr>
+          <tr><td class="label">5.0 mm</td><td>395</td><td>79.0</td><td>39.5</td><td>19.8</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">F ≥ 1 → 近場（Fresnel）；F ≪ 1 → 遠場（Fraunhofer）</p>
+  </div>
+</div>
+
+<!-- ════════════ Q&A ════════════ -->
+<div id="qa" class="section">
+  <div class="sec-head">
+    <div class="sec-icon" style="background:rgba(124,58,237,0.12);">💬</div>
+    <div>
+      <h2>問題討論（參考解答）</h2>
+      <p>點擊問題展開解答</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      <span>Q1. 近場繞射中，屏幕光譜分布和 Fresnel number 的關係為何？分中心點和外圈討論。</span>
+      <span class="qa-toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p><strong>F = a²/(Lλ)</strong> 是判斷近場／遠場的無因次量。</p>
+      <p style="margin-top:0.5rem"><strong>中心點：</strong>F 大時亮度較穩定且接近幾何投影；F 較小時，中心亮度可能隨孔徑或距離變化在亮、暗之間振盪，由各 Fresnel zones 的相位疊加決定。</p>
+      <p style="margin-top:0.5rem"><strong>外圈：</strong>F 大時主要呈現幾何陰影邊界；F 減小時環紋逐漸明顯；F ≪ 1 時收斂為 Fraunhofer 圖樣。</p>
+      <p style="margin-top:0.5rem"><strong>整體趨勢：</strong>F 越小，波動效應越顯著。</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      <span>Q2. 真實的 DNA 結構分析需要使用 X-ray，原因為何？</span>
+      <span class="qa-toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p>解析能力受波長限制：要解析尺度 d 的結構，須有 λ ≲ d。</p>
+      <ul style="margin-top:0.5rem">
+        <li>DNA 結構尺度：鹼基間距 3.4 Å、雙螺旋直徑 20 Å</li>
+        <li>可見光 λ ≈ 400–700 nm，<strong class="hl-red">比 DNA 大 1000 倍</strong> → 完全無法解析</li>
+        <li>X-ray λ ≈ 0.1–1 nm，與分子尺度相當 → 可產生有結構資訊的繞射</li>
+      </ul>
+      <p style="margin-top:0.5rem">本實驗用毫米級彈簧重現「螺旋 → X 形繞射」的拓樸特徵，但要看真正的 DNA 必須換尺度匹配的光源（X-ray 或冷凍電鏡）。</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      <span>Q3. 實驗 C 中，傅式轉換影像較接近 Fresnel 或 Fraunhofer 繞射圖形？</span>
+      <span class="qa-toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p>較接近 <strong class="hl-blue">Fraunhofer</strong>。</p>
+      <p style="margin-top:0.4rem">關鍵：透鏡的二次相位項 e<sup>−ikr²/2f</sup> 剛好抵銷 Fresnel 積分中那項二次相位。抵銷後剩下的就是純 Fourier kernel，因此 L1 焦平面上看到的就是物體的 Fraunhofer 繞射，但無需把屏幕架到無窮遠。</p>
+      <p style="margin-top:0.4rem"><strong>一句話：</strong>透鏡 = 把無限遠的 Fraunhofer 圖樣壓縮到焦平面的工具。</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      <span>Q4. 傅式轉換實驗中，粗方格陣列與細方格陣列，圖案粗細與傅氏分布的關係？</span>
+      <span class="qa-toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p><strong>實空間 ↔ 頻域：互為倒數關係。</strong></p>
+      <ul style="margin-top:0.4rem">
+        <li><strong class="hl-blue">疏密（週期 d）：</strong>亮點間距 ∝ <strong>1/d</strong>。粗格 → 點靠近；細格 → 點散開</li>
+        <li><strong class="hl-gold">線粗細（縫寬 a）：</strong>包絡寬度 ∝ <strong>1/a</strong>。線粗 → 包絡窄、高階快速衰減；線細 → 包絡寬、高階點看得多</li>
+        <li><strong class="hl-purple">方向：</strong>物體旋轉 θ → 頻譜也旋轉 θ（FT 旋轉不變性）</li>
+      </ul>
+      <p style="margin-top:0.5rem"><strong>口訣：</strong>細密外展、粗疏集中；線細包絡寬、線粗包絡窄。</p>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggleQA(this)">
+      <span>Q5. 反傅氏轉換實驗中，粗方格與細方格的影像失真狀況有何不同？</span>
+      <span class="qa-toggle">+</span>
+    </div>
+    <div class="qa-a">
+      <p>關鍵：誰的「主能量」落在被遮的頻段，誰失真嚴重。</p>
+      <div class="table-wrap" style="margin-top:0.5rem">
+        <table>
+          <thead><tr><th></th><th>粗方格（低頻為主）</th><th>細方格（高頻為主）</th></tr></thead>
+          <tbody>
+            <tr><td class="label">低通濾波</td><td>幾乎無失真</td><td><span class="hl-red">紋理消失，糊成一片</span></td></tr>
+            <tr><td class="label">高通濾波</td><td><span class="hl-red">輪廓消失，僅剩邊緣</span></td><td>整體變暗但紋理仍可辨</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:0.5rem"><strong>實作意涵：</strong>真實光學系統有截止頻率（孔徑、像差限制），高頻容易被截斷，所以細方格的反傅氏轉換普遍比粗方格失真更明顯。</p>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleQA(el) {
+  el.parentElement.classList.toggle('open');
+}
+
+function clr(ctx, c, w, h) {
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+}
+
+function axes(ctx, ox, oy, w, h, xLabel, yLabel) {
+  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+  for (let x = ox; x < w-20; x += 50) { ctx.beginPath(); ctx.moveTo(x,20); ctx.lineTo(x,oy); ctx.stroke(); }
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.beginPath(); ctx.moveTo(ox, 20); ctx.lineTo(ox, oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(w-20, oy); ctx.stroke();
+  ctx.fillStyle = '#475569'; ctx.font = '11px JetBrains Mono';
+  ctx.fillText(xLabel, w-60, oy+14);
+  ctx.fillText(yLabel, ox+4, 16);
+}
+
+function drawAiry() {
+  const canvas = document.getElementById('airyCanvas');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.offsetWidth || 700; const h = 220;
+  canvas.width = w; canvas.height = h;
+
+  const D = +document.getElementById('airyD').value * 1e-6;
+  const L = +document.getElementById('airyL').value;
+  const lam = 633e-9;
+  document.getElementById('airyDval').textContent = document.getElementById('airyD').value;
+  document.getElementById('airyLval').textContent = (+document.getElementById('airyL').value).toFixed(2);
+
+  clr(ctx, '#ffffff', w, h);
+  const ox = 50, oy = h - 30;
+  axes(ctx, ox, oy, w, h, 'r (mm)', 'I/I₀');
+
+  const r1 = 1.22 * lam * L / D * 1000;
+  const rMax = Math.max(r1 * 3, 5);
+  const scaleX = (w - ox - 30) / (2 * rMax);
+  const scaleY = oy - 30;
+
+  function airy(r_mm) {
+    const r = r_mm * 1e-3;
+    if (r === 0) return 1;
+    const u = Math.PI * D * r / (lam * L);
+    let j = 0, t = u/2;
+    for (let m = 0; m <= 15; m++) {
+      if (m > 0) t *= -(u*u/4) / (m*(m+1));
+      j += t;
+    }
+    return (2 * j / u) ** 2;
+  }
+
+  const cx = ox + rMax * scaleX;
+  ctx.beginPath();
+  ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 2;
+  for (let px = ox; px < w - 20; px++) {
+    const r_mm = (px - cx) / scaleX;
+    const I = airy(r_mm);
+    const py = oy - I * scaleY;
+    if (px === ox) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  ctx.setLineDash([4,4]); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1;
+  const r1px = cx + r1 * scaleX;
+  const r1pxL = cx - r1 * scaleX;
+  ctx.beginPath(); ctx.moveTo(r1px, 20); ctx.lineTo(r1px, oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(r1pxL, 20); ctx.lineTo(r1pxL, oy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = '#dc2626'; ctx.font = '10px JetBrains Mono';
+  ctx.fillText(`r₁ = ${r1.toFixed(2)} mm`, r1px + 4, 35);
+
+  ctx.fillStyle = '#475569'; ctx.font = '10px JetBrains Mono';
+  ctx.fillText('0', cx - 5, oy + 14);
+}
+
+function drawSlit() {
+  const canvas = document.getElementById('slitCanvas');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.offsetWidth || 700; const h = 220;
+  canvas.width = w; canvas.height = h;
+  const N = +document.getElementById('slitN').value;
+  document.getElementById('slitNval').textContent = N;
+
+  clr(ctx, '#ffffff', w, h);
+  const ox = 50, oy = h - 30;
+  axes(ctx, ox, oy, w, h, 'θ (norm.)', 'I');
+
+  const pts = w - ox - 30;
+  const scaleY = oy - 30;
+  ctx.beginPath(); ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2;
+  for (let i = 0; i <= pts; i++) {
+    const t = (i / pts - 0.5) * 8 * Math.PI;
+    const alpha = t / 2;
+    let I;
+    if (N === 1) {
+      I = Math.abs(alpha) < 1e-10 ? 1 : (Math.sin(alpha) / alpha) ** 2;
+    } else {
+      const d = 2;
+      const delta = d * alpha;
+      const sinc = Math.abs(alpha) < 1e-10 ? 1 : (Math.sin(alpha) / alpha) ** 2;
+      const multi = Math.abs(Math.sin(delta)) < 1e-10 ? N * N : (Math.sin(N * delta) / Math.sin(delta)) ** 2 / (N * N);
+      I = sinc * multi;
+    }
+    const px = ox + i;
+    const py = oy - I * scaleY;
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  ctx.fillStyle = '#7c3aed'; ctx.font = '10px JetBrains Mono';
+  ctx.fillText(`N = ${N} 狹縫`, ox + 10, 25);
+}
+
+function drawFreq() {
+  const canvas = document.getElementById('freqCanvas');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.offsetWidth || 700; const h = 180;
+  canvas.width = w; canvas.height = h;
+  const d = +document.getElementById('freqD').value;
+  document.getElementById('freqDval').textContent = d.toFixed(1);
+
+  clr(ctx, '#ffffff', w, h);
+
+  const cx = w / 2, cy = h / 2;
+  const spacing = 80 / d;
+
+  ctx.fillStyle = '#f1f5f9';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.fillStyle = '#475569'; ctx.font = '11px JetBrains Mono';
+  ctx.fillText('Fourier Plane', 10, 18);
+  ctx.fillStyle = '#475569';
+  ctx.fillText(`週期 d = ${d.toFixed(1)} mm → 頻率 1/d = ${(1/d).toFixed(2)} mm⁻¹`, 10, h-10);
+
+  const maxOrder = 3;
+  for (let m = -maxOrder; m <= maxOrder; m++) {
+    for (let n = -maxOrder; n <= maxOrder; n++) {
+      const x = cx + m * spacing;
+      const y = cy + n * spacing;
+      if (x < 10 || x > w-10 || y < 10 || y > h-10) continue;
+      const dist = Math.sqrt(m*m + n*n);
+      const r = dist === 0 ? 7 : Math.max(2, 5 - dist * 0.6);
+      const alpha = dist === 0 ? 1 : Math.max(0.15, 1 - dist * 0.25);
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(52, 211, 153, ${alpha})`;
+      ctx.fill();
+    }
+  }
+
+  ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI*2);
+  ctx.fillStyle = '#059669'; ctx.fill();
+  ctx.fillStyle = '#ffffff'; ctx.font = 'bold 9px JetBrains Mono';
+  ctx.fillText('DC', cx-7, cy+4);
+
+  if (spacing < 30) {
+    ctx.fillStyle = '#0284c7'; ctx.font = '10px Noto Sans TC';
+    ctx.fillText('← 細方格：高頻，點分布展開', cx + 20, cy - 15);
+  } else {
+    ctx.fillStyle = '#d97706'; ctx.font = '10px Noto Sans TC';
+    ctx.fillText('← 粗方格：低頻，點分布集中', cx + 20, cy - 15);
+  }
+}
+
+function drawLinear() {
+  const canvas = document.getElementById('linearCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.offsetWidth || 700; const h = 240;
+  canvas.width = w; canvas.height = h;
+
+  clr(ctx, '#ffffff', w, h);
+
+  const data = [
+    {L: 420, d: 34.25},
+    {L: 490, d: 40.0},
+    {L: 665, d: 52.5}
+  ];
+
+  const ox = 60, oy = h - 40;
+  const xMin = 0, xMax = 750;
+  const yMin = 0, yMax = 65;
+  const scaleX = (w - ox - 30) / (xMax - xMin);
+  const scaleY = (oy - 30) / (yMax - yMin);
+
+  // Grid
+  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 0.6;
+  for (let xv = 100; xv <= xMax; xv += 100) {
+    const px = ox + xv * scaleX;
+    ctx.beginPath(); ctx.moveTo(px, 20); ctx.lineTo(px, oy); ctx.stroke();
+    ctx.fillStyle = '#475569'; ctx.font = '10px JetBrains Mono';
+    ctx.fillText(xv.toString(), px - 10, oy + 14);
+  }
+  for (let yv = 10; yv <= yMax; yv += 10) {
+    const py = oy - yv * scaleY;
+    ctx.beginPath(); ctx.moveTo(ox, py); ctx.lineTo(w - 20, py); ctx.stroke();
+    ctx.fillStyle = '#475569'; ctx.font = '10px JetBrains Mono';
+    ctx.fillText(yv.toString(), ox - 25, py + 4);
+  }
+
+  // Axes
+  ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(ox, 20); ctx.lineTo(ox, oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(w-20, oy); ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle = '#475569'; ctx.font = '11px JetBrains Mono';
+  ctx.fillText('L (mm)', w - 70, oy + 28);
+  ctx.save();
+  ctx.translate(20, oy / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('r (mm)', -20, 0);
+  ctx.restore();
+
+  // Theory line: r = (1.22 * 633e-9 / 9.57e-6) * L * 1000  (in mm)
+  // slope = 1.22 * 633e-9 / 9.57e-6 = 0.0807 (dimensionless), so r/L ≈ 0.0807
+  const slope = 1.22 * 633e-9 / 9.57e-6;
+  ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath();
+  ctx.moveTo(ox + 0 * scaleX, oy - 0 * scaleY);
+  ctx.lineTo(ox + xMax * scaleX, oy - (slope * xMax) * scaleY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Theory label
+  ctx.fillStyle = '#0284c7'; ctx.font = '10px JetBrains Mono';
+  ctx.fillText('理論線 (D = 9.57 μm)', ox + 50 * scaleX, oy - 100 * scaleY);
+  ctx.fillText('斜率 = 1.22λ/D ≈ 0.0807', ox + 50 * scaleX, oy - 90 * scaleY);
+
+  // Data points
+  data.forEach((p, i) => {
+    const px = ox + p.L * scaleX;
+    const py = oy - p.d * scaleY;
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#d97706';
+    ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Annotation
+    ctx.fillStyle = '#e2e8f0'; ctx.font = '10px JetBrains Mono';
+    ctx.fillText(`(${p.L}, ${p.d})`, px + 10, py - 6);
+  });
+
+  // Title
+  ctx.fillStyle = '#7c3aed'; ctx.font = '11px Noto Sans TC';
+  ctx.fillText('● 實測數據點    ─ ─ r = (1.22λ/D)·L 理論線', ox + 200, 25);
+}
+
+function initCharts() {
+  drawAiry(); drawSlit(); drawFreq(); drawLinear();
+}
+
+document.getElementById('airyD').addEventListener('input', drawAiry);
+document.getElementById('airyL').addEventListener('input', drawAiry);
+document.getElementById('slitN').addEventListener('input', drawSlit);
+document.getElementById('freqD').addEventListener('input', drawFreq);
+
+window.addEventListener('resize', () => { drawAiry(); drawSlit(); drawFreq(); drawLinear(); });
+window.addEventListener('load', initCharts);
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    setTimeout(() => { drawAiry(); drawSlit(); drawFreq(); drawLinear(); }, 50);
+  });
+});
+</script>
+</body>
+</html>
